@@ -87,7 +87,8 @@ func _on_input_text_submitted(new_text: String) -> void:
 		
 	var buffer : StreamPeerBuffer
 	buffer = StreamPeerBuffer.new()
-	print("MEU ASSAAAAAID ", my_id)
+	
+	
 	buffer.put_u8(Network.CHAT)
 	
 	var text_bytes = text.to_ascii_buffer()
