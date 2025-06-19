@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfwnxi4mcvuso"]
+
+[ext_resource type="Script" uid="uid://cd074q8qfq5e3" path="res://client.gd" id="1_lgb4g"]
+
+[node name="Client" type="Node"]
+script = ExtResource("1_lgb4g")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_right = 250.0
+grow_vertical = 2
+
+[node name="OutputContainer" type="PanelContainer" parent="Control/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/VBoxContainer/OutputContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+
+[node name="Output" type="RichTextLabel" parent="Control/VBoxContainer/OutputContainer/MarginContainer"]
+layout_mode = 2
+scroll_following = true
+
+[node name="Input" type="LineEdit" parent="Control/VBoxContainer"]
+layout_mode = 2
+
+[connection signal="text_submitted" from="Control/VBoxContainer/Input" to="." method="_on_input_text_submitted"]
