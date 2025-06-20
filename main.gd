@@ -1,6 +1,12 @@
-extends Node
+extends Node2D
 @export var player_scene: PackedScene
 @export var enemy_scene: PackedScene
+
+signal player_moved(x, y, id)
+
+# Dictionary ID : Instance
+var my_id = -1
+var players_connected = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -9,18 +15,28 @@ func _ready() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	pass
+	if(my_id != -1):
+		var mouse_position = Vector2(get_global_mouse_position().x,  400)
+		
+		players_connected[my_id].position = mouse_position
+		var x = mouse_position.x
+		var y = mouse_position.y
+		emit_signal("player_moved", x, y, my_id)
 
 
 func _on_mob_spawn_timer_timeout() -> void:
 	spawn_enemy()
 	
-func spawn_player(id, spawn_x, spawn_y):
+func spawn_player(spawn_x, spawn_y, id):
 	var player = player_scene.instantiate()
 	player.id = id
 	player.position.x = spawn_x
 	player.position.y = spawn_y
 	
+	players_connected[id] = player
+	print("Spawnando player: ", player.id,
+						 " X: ", player.position.x,
+						 " Y: ", player.position.y)
 	add_child(player)
 		
 func spawn_enemy():
@@ -31,9 +47,20 @@ func spawn_enemy():
 	enemy.position.y = spawn_y
 	
 	add_child(enemy)
+	
+func _move_players(x, y, id):
+	pass
+
+# ARRUMAR ESSA PORRA O ID TA NA POSIÇAO ERRADA!!!!!
+func _on_client_player_connected(x: Variant, y: Variant, id: Variant) -> void:
+	spawn_player(x, y, id)
+	my_id = id
 
 
+func _on_client_player_joined(x: Variant, y: Variant, id: Variant) -> void:
+	print("Spawnando OUTRO player")
+	spawn_player(x+100, y+100, id)
 
 
-func _on_client_player_connected(id: Variant, x: Variant, y: Variant) -> void:
-	spawn_player(id, x, y)
+func _on_client_player_moved(x: Variant, y: Variant, id: Variant) -> void:
+	players_connected[id].position = Vector2(x, y)

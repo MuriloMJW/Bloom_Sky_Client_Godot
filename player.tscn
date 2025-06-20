@@ -25,4 +25,11 @@ color = Color(0.262122, 9.76092e-05, 0.897703, 1)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_4flbx")
 
+[node name="username" type="Label" parent="."]
+offset_left = -22.0
+offset_top = -45.0
+offset_right = 20.0
+offset_bottom = -22.0
+text = "Teste"
+
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

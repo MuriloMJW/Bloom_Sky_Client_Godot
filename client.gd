@@ -1,11 +1,15 @@
 extends Node
 
+signal player_connected(id, x, y)
+signal player_joined(x, y, id)
+signal player_moved(x, y, id)
+
+
 var websocket_url = "ws://127.0.0.1:8080"
 #var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
-
 var my_id = -1
 
 @onready var chat_screen = $Control/VBoxContainer
@@ -22,7 +26,7 @@ enum Network {
 	CHAT
 }
 
-signal player_connected(id, x, y)
+
 
 func _ready() -> void:
 	chat_screen.hide()
@@ -39,7 +43,6 @@ func _process(delta: float) -> void:
 	
 	if(state == socket.STATE_OPEN):
 		_wait_packets()
-	
 	
 	
 func _state_changed():
@@ -126,11 +129,14 @@ func receive_packet(packet):
 			_handle_player_connect(buffer)
 			
 		Network.PLAYER_JOINED:
-			print(2)
+			_handle_player_joined(buffer)
+			
 		Network.PLAYER_DISCONNECT:
 			print(3)
 		Network.PLAYER_MOVE:
-			print(4)
+			_handle_player_moved(buffer)
+			#pass
+			
 		Network.CHAT:
 			_handle_chat(buffer)
 			
@@ -139,7 +145,7 @@ func _send_packet(buffer):
 	print(buffer.data_array)
 	socket.send(buffer.data_array)
 	
-	
+# Confirma a conexão e recebe o id
 func _handle_player_establish(buffer):
 	print("===PLAYER ESTABLISH===")
 	my_id = buffer.get_u8()
@@ -149,18 +155,29 @@ func _handle_player_establish(buffer):
 	buffer.clear()
 	buffer.seek(0)
 	buffer.put_u8(Network.PLAYER_ESTABLISH)
-	buffer.put_u8(my_id)
+	#buffer.put_u8(my_id)
 	_send_packet(buffer)
 
 func _handle_player_connect(buffer):
 	print("===PLAYER CONNECT===")
 	var start_x = buffer.get_u16()
 	var start_y = buffer.get_u16()
-	print("START X ", start_x)
-	emit_signal("player_connected", my_id, start_x, start_y)
+	emit_signal("player_connected", start_x, start_y, my_id)
 
+func _handle_player_joined(buffer):
+	print("===PLAYER JOINED===")
+	var start_x = buffer.get_u16()
+	var start_y = buffer.get_u16()
+	var player_joined_id = buffer.get_u8()
+	emit_signal("player_joined", start_x, start_y, player_joined_id)
 
-
+func _handle_player_moved(buffer):
+	print("===PLAYER MOVED===")
+	var start_x = buffer.get_u16()
+	var start_y = buffer.get_u16()
+	var player_moved_id = buffer.get_u8()
+	emit_signal("player_moved", start_x, start_y, player_moved_id)
+	
 
 func _handle_chat(buffer):
 	#var text_received = socket.get_packet().get_string_from_ascii()
@@ -170,3 +187,17 @@ func _handle_chat(buffer):
 	
 	output_chat.text += ("\n"+text_received)
 	
+
+
+func _on_main_player_moved(x: Variant, y: Variant, id: Variant) -> void:
+	var buffer : StreamPeerBuffer
+	buffer = StreamPeerBuffer.new()
+	
+	buffer.clear()
+	buffer.seek(0)
+	buffer.put_u8(Network.PLAYER_MOVE)
+	buffer.put_u16(x)
+	buffer.put_u16(y)
+	buffer.put_u8(my_id)
+	
+	_send_packet(buffer)

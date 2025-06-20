@@ -13,7 +13,8 @@ func _ready():
 	#start_x = get_viewport().get_visible_rect().size.x / 2
 	#start_y = get_viewport().get_visible_rect().size.y - 30
 	#position = Vector2(start_x, start_y)
-	pass
+	
+	$username.text = str(id)
 	
 
 func _process(delta):
