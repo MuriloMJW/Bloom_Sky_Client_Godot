@@ -1,7 +1,8 @@
 extends Node
 
-signal player_connected(id, x, y)
+signal player_connected(x, y, id)
 signal player_joined(x, y, id)
+signal player_disconnected(id)
 signal player_moved(x, y, id)
 
 
@@ -132,7 +133,8 @@ func receive_packet(packet):
 			_handle_player_joined(buffer)
 			
 		Network.PLAYER_DISCONNECT:
-			print(3)
+			_handle_player_disconnect(buffer)
+			
 		Network.PLAYER_MOVE:
 			_handle_player_moved(buffer)
 			#pass
@@ -171,6 +173,12 @@ func _handle_player_joined(buffer):
 	var player_joined_id = buffer.get_u8()
 	emit_signal("player_joined", start_x, start_y, player_joined_id)
 
+func _handle_player_disconnect(buffer):
+	print("===PLAYER DISCONNECTED===")
+	var player_disconnected_id = buffer.get_u8()
+	emit_signal("player_disconnected", player_disconnected_id)
+	
+
 func _handle_player_moved(buffer):
 	print("===PLAYER MOVED===")
 	var start_x = buffer.get_u16()
@@ -186,10 +194,8 @@ func _handle_chat(buffer):
 	print("Texto recebido: ", text_received)
 	
 	output_chat.text += ("\n"+text_received)
-	
 
-
-func _on_main_player_moved(x: Variant, y: Variant, id: Variant) -> void:
+func _on_main_game_player_moved(x: Variant, y: Variant, id: Variant) -> void:
 	var buffer : StreamPeerBuffer
 	buffer = StreamPeerBuffer.new()
 	
