@@ -25,7 +25,13 @@ func _process(delta):
 	if(Input.is_action_just_pressed("shoot")):
 		shoot()
 	
-	
+func show_info():
+	print("===PLAYER INFO===")
+	print("ID: ", self.id,
+		  " X: ", self.position.x,
+		  " Y: ", self.position.y)
+
+
 func shoot():
 	var bullet = bullet_scene.instantiate()
 	bullet.position = position

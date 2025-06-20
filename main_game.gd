@@ -4,7 +4,7 @@ extends Node2D
 
 signal player_moved(x, y, id)
 
-# Dictionary ID : Instance
+# Dictionary ID : Player Instance
 var my_id = -1
 var players_connected = {}
 
@@ -17,10 +17,12 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if(my_id != -1):
 		if(Input.is_action_just_pressed("shoot")):
+			
 			var mouse_position = get_global_mouse_position()
 			var x = mouse_position.x
 			var y = mouse_position.y
-			players_connected[my_id].position = mouse_position
+			#players_connected[my_id].position = mouse_position
+			
 			emit_signal("player_moved", x, y, my_id)
 			
 		#var mouse_position = get_global_mouse_position()
@@ -30,21 +32,9 @@ func _process(delta: float) -> void:
 		#var y = mouse_position.y
 		#emit_signal("player_moved", x, y, my_id)
 
-
 func _on_mob_spawn_timer_timeout() -> void:
 	spawn_enemy()
 	
-func spawn_player(spawn_x, spawn_y, id):
-	var player = player_scene.instantiate()
-	player.id = id
-	player.position.x = spawn_x
-	player.position.y = spawn_y
-	
-	players_connected[id] = player
-	print("Spawnando player: ", player.id,
-						 " X: ", player.position.x,
-						 " Y: ", player.position.y)
-	add_child(player)
 		
 func spawn_enemy():
 	var spawn_x = randi_range(0, get_viewport().get_visible_rect().size.x)
@@ -55,25 +45,44 @@ func spawn_enemy():
 	
 	add_child(enemy)
 	
-func _move_players(x, y, id):
-	pass
 
-
-
-func _on_client_player_joined(x: Variant, y: Variant, id: Variant) -> void:
-	print("Spawnando OUTRO player")
-	spawn_player(x, y, id)
-
-func _on_client_player_moved(x: Variant, y: Variant, id: Variant) -> void:
-	players_connected[id].position = Vector2(x, y)
-
-
-func _on_client_player_connected(x: Variant, y: Variant, id: Variant) -> void:
-	spawn_player(x, y, id)
-	my_id = id
-
-
-func _on_client_player_disconnected(id: Variant) -> void:
-	players_connected[id].queue_free()
-	players_connected.erase(id)
+func spawn_player(spawn_x, spawn_y, id):
+	var new_player = player_scene.instantiate()
 	
+	new_player.position.x = spawn_x
+	new_player.position.y = spawn_y
+	new_player.id = id
+	
+	players_connected[id] = new_player
+	
+	new_player.show_info()
+	
+	add_child(new_player)
+
+
+
+# --- [ SINAIS RECEBIDOS ] --- #
+
+
+func _on_client_player_connected(player_x: Variant, player_y: Variant, player_id: Variant) -> void:
+	my_id = player_id
+	spawn_player(player_x, player_y, player_id)
+
+
+func _on_client_other_player_connected(other_player_x: Variant, other_player_y: Variant, other_player_id: Variant) -> void:
+	spawn_player(other_player_x, other_player_y, other_player_id)
+
+
+func _on_client_other_player_disconnected(other_player_id: Variant) -> void:
+	players_connected[other_player_id].queue_free()
+	players_connected.erase(other_player_id)
+
+
+func _on_client_player_moved(player_x: Variant, player_y: Variant, id: Variant) -> void:
+	players_connected[id].position.x = player_x
+	players_connected[id].position.y = player_y
+
+
+func _on_client_other_player_moved(other_player_x: Variant, other_player_y: Variant, other_player_id: Variant) -> void:
+	players_connected[other_player_id].position.x = other_player_x
+	players_connected[other_player_id].position.y = other_player_y

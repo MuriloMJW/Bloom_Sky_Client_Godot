@@ -21,7 +21,8 @@ enemy_scene = ExtResource("2_h2yge")
 
 [connection signal="timeout" from="MobSpawnTimer" to="." method="_on_mob_spawn_timer_timeout"]
 [connection signal="player_moved" from="MainGame" to="Client" method="_on_main_game_player_moved"]
+[connection signal="other_player_connected" from="Client" to="MainGame" method="_on_client_other_player_connected"]
+[connection signal="other_player_disconnected" from="Client" to="MainGame" method="_on_client_other_player_disconnected"]
+[connection signal="other_player_moved" from="Client" to="MainGame" method="_on_client_other_player_moved"]
 [connection signal="player_connected" from="Client" to="MainGame" method="_on_client_player_connected"]
-[connection signal="player_disconnected" from="Client" to="MainGame" method="_on_client_player_disconnected"]
-[connection signal="player_joined" from="Client" to="MainGame" method="_on_client_player_joined"]
 [connection signal="player_moved" from="Client" to="MainGame" method="_on_client_player_moved"]
