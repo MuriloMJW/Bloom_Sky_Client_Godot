@@ -245,3 +245,6 @@ func _on_main_game_player_moved(x: Variant, y: Variant, id: Variant) -> void:
 	buffer.put_u8(my_id)
 	
 	_send_packet(buffer)
+
+func _on_player_shoot(id: Variant) -> void:
+	print("Atirei")

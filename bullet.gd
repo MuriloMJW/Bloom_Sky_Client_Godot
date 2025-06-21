@@ -1,16 +1,19 @@
 extends Area2D
 
 @export
-var bullet_speed = 500
+var speed = 500
+var is_moving_up = true
+var shooter_id = -1
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pass
+	if(!is_moving_up):
+		speed *= -1
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	position.y -= bullet_speed * delta
+	position.y -= speed * delta
 
 
 func _on_area_entered(area: Area2D) -> void:

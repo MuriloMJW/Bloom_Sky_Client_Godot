@@ -5,7 +5,7 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4flbx"]
 size = Vector2(40, 40)
 
-[node name="Player" type="Area2D"]
+[node name="Player" type="Area2D" groups=["player"]]
 script = ExtResource("1_4flbx")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -32,4 +32,5 @@ offset_right = 20.0
 offset_bottom = -22.0
 text = "Teste"
 
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
