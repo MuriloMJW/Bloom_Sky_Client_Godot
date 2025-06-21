@@ -42,10 +42,8 @@ func _process(delta):
 			position = mouse_position
 			
 			
-			
-	
-	if(Input.is_action_just_pressed("shoot")):
-		shoot()
+	if(is_my_player and Input.is_action_just_pressed("shoot")):
+		emit_signal("player_shoot", id)
 	
 func show_info():
 	print("===PLAYER INFO===")
@@ -55,14 +53,13 @@ func show_info():
 
 
 func shoot():
-	if(is_my_player and is_alive):
+	if(is_alive):
 		var bullet = bullet_scene.instantiate()
 		bullet.position = position
 		bullet.is_moving_up = is_team_up
 		bullet.shooter_id = id
 		get_parent().add_child(bullet)
 		
-		emit_signal("player_shoot", id)
 		
 	
 func _on_area_entered(area: Area2D) -> void:

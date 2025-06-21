@@ -9,6 +9,7 @@ var shooter_id = -1
 func _ready() -> void:
 	if(!is_moving_up):
 		speed *= -1
+	print(is_moving_up)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

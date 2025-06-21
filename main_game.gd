@@ -56,7 +56,7 @@ func spawn_player(spawn_x, spawn_y, id):
 	new_player.position.y = spawn_y
 	new_player.id = id
 	new_player.is_my_player = (my_id == id)
-	new_player.is_team_up = (my_id % 2 == 0)
+	new_player.is_team_up = (id % 2 == 0)
 	
 	players_connected[id] = new_player
 	
@@ -95,3 +95,11 @@ func _on_client_player_moved(player_x: Variant, player_y: Variant, id: Variant) 
 func _on_client_other_player_moved(other_player_x: Variant, other_player_y: Variant, other_player_id: Variant) -> void:
 	players_connected[other_player_id].position.x = other_player_x
 	players_connected[other_player_id].position.y = other_player_y
+
+
+func _on_client_player_shoot() -> void:
+	players_connected[my_id].shoot()
+
+
+func _on_client_other_player_shoot(other_player_id: Variant) -> void:
+	players_connected[other_player_id].shoot()

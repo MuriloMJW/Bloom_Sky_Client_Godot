@@ -5,6 +5,8 @@ signal other_player_connected(other_player_x, other_player_y, other_player_id)
 signal other_player_disconnected(other_player_id)
 signal player_moved(player_x, player_y, id)
 signal other_player_moved(other_player_x, other_player_y, other_player_id)
+signal player_shoot()
+signal other_player_shoot(other_player_id)
 
 
 #var websocket_url = "ws://127.0.0.1:8080"
@@ -26,6 +28,8 @@ enum Network {
 	
 	REQUEST_PLAYER_MOVE = 1,
 	
+	REQUEST_PLAYER_SHOOT = 2,
+	
 	CHAT_MESSAGE = 100,
 	
 	# Server -> Client
@@ -35,6 +39,9 @@ enum Network {
 	
 	PLAYER_MOVED = 103,
 	OTHER_PLAYER_MOVED = 104,
+	
+	PLAYER_SHOOT = 105,
+	OTHER_PLAYER_SHOOT = 106,
 	
 	CHAT_RECEIVED = 200
 }
@@ -131,6 +138,12 @@ func receive_packet(packet):
 			
 		Network.OTHER_PLAYER_MOVED:
 			_handle_other_player_moved(buffer)
+			
+		Network.PLAYER_SHOOT:
+			_handle_player_shoot(buffer)
+			
+		Network.OTHER_PLAYER_SHOOT:
+			_handle_other_player_shoot(buffer)
 
 		Network.CHAT_RECEIVED:
 			_handle_chat_received(buffer)
@@ -157,6 +170,15 @@ func _request_player_move(move_x, move_y):
 	buffer.put_u16(move_x)
 	buffer.put_u16(move_y)
 	_send_packet(buffer)
+	
+func _request_player_shoot():
+	print("===REQUEST PLAYER SHOOT===")
+	var buffer : StreamPeerBuffer
+	buffer = StreamPeerBuffer.new()
+	buffer.put_u8(Network.REQUEST_PLAYER_SHOOT)
+	_send_packet(buffer)
+	
+	
 	
 # --- [ RESPOSTAS DO SERVIDOR ] --- #
 
@@ -197,6 +219,15 @@ func _handle_other_player_moved(buffer):
 	var move_y = buffer.get_u16()
 	var other_player_id = buffer.get_u8()
 	emit_signal("other_player_moved", move_x, move_y, other_player_id)
+
+func _handle_player_shoot(buffer):
+	print("===PLAYER SHOOT===")
+	emit_signal("player_shoot")
+	
+func _handle_other_player_shoot(buffer):
+	print("===OTHER PLAYER MOVED===")
+	var other_player_id = buffer.get_u8()
+	emit_signal("other_player_shoot", other_player_id)
 	
 
 func _handle_chat_received(buffer):
@@ -247,4 +278,5 @@ func _on_main_game_player_moved(x: Variant, y: Variant, id: Variant) -> void:
 	_send_packet(buffer)
 
 func _on_player_shoot(id: Variant) -> void:
-	print("Atirei")
+	_request_player_shoot()
+	

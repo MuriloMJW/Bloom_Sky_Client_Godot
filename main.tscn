@@ -24,5 +24,7 @@ enemy_scene = ExtResource("2_h2yge")
 [connection signal="other_player_connected" from="Client" to="MainGame" method="_on_client_other_player_connected"]
 [connection signal="other_player_disconnected" from="Client" to="MainGame" method="_on_client_other_player_disconnected"]
 [connection signal="other_player_moved" from="Client" to="MainGame" method="_on_client_other_player_moved"]
+[connection signal="other_player_shoot" from="Client" to="MainGame" method="_on_client_other_player_shoot"]
 [connection signal="player_connected" from="Client" to="MainGame" method="_on_client_player_connected"]
 [connection signal="player_moved" from="Client" to="MainGame" method="_on_client_player_moved"]
+[connection signal="player_shoot" from="Client" to="MainGame" method="_on_client_player_shoot"]
