@@ -4,8 +4,6 @@ extends Node2D
 
 @onready var client = $"../Client"
 
-signal player_moved(x, y, id)
-
 # Dictionary ID : Player Instance
 var my_id = -1
 var players_connected = {}
@@ -16,13 +14,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	pass
 	
-	if(Input.is_action_just_pressed("move_left")):
-		players_connected[my_id].die()
-		
-	if(Input.is_action_just_pressed("move_right")):
-		players_connected[my_id].respawn(players_connected[my_id].position.x,
-										 players_connected[my_id].position.y)
 	
 			#players_connected[my_id].position = mouse_position
 			
@@ -65,7 +58,11 @@ func spawn_player(spawn_x, spawn_y, id):
 	add_child(new_player)
 	
 	if(new_player.is_my_player):
-		new_player.player_shoot.connect(client._on_player_shoot)
+		# Ligando sinais do player no client
+		new_player.move_pressed.connect(client._on_player_move_pressed)
+		new_player.shoot_pressed.connect(client._on_player_shoot_pressed)
+		new_player.damage_report.connect(client._on_player_damage_report)
+		new_player.respawn_pressed.connect(client._on_respawn_pressed)
 
 
 
@@ -87,8 +84,8 @@ func _on_client_other_player_disconnected(other_player_id: Variant) -> void:
 
 
 func _on_client_player_moved(player_x: Variant, player_y: Variant, id: Variant) -> void:
-	#players_connected[id].position.x = player_x
-	#players_connected[id].position.y = player_y
+	players_connected[id].position.x = player_x
+	players_connected[id].position.y = player_y
 	pass
 
 
@@ -103,3 +100,11 @@ func _on_client_player_shoot() -> void:
 
 func _on_client_other_player_shoot(other_player_id: Variant) -> void:
 	players_connected[other_player_id].shoot()
+
+
+func _on_client_player_killed(killed_id: Variant) -> void:
+	players_connected[killed_id].kill()
+
+
+func _on_client_player_respawned(player_respawned_id: Variant, player_respawned_x: Variant, player_respawned_y: Variant) -> void:
+	players_connected[player_respawned_id].respawn(player_respawned_x, player_respawned_y)

@@ -20,11 +20,12 @@ enemy_scene = ExtResource("2_h2yge")
 [node name="Client" parent="." instance=ExtResource("4_1bvp3")]
 
 [connection signal="timeout" from="MobSpawnTimer" to="." method="_on_mob_spawn_timer_timeout"]
-[connection signal="player_moved" from="MainGame" to="Client" method="_on_main_game_player_moved"]
 [connection signal="other_player_connected" from="Client" to="MainGame" method="_on_client_other_player_connected"]
 [connection signal="other_player_disconnected" from="Client" to="MainGame" method="_on_client_other_player_disconnected"]
 [connection signal="other_player_moved" from="Client" to="MainGame" method="_on_client_other_player_moved"]
 [connection signal="other_player_shoot" from="Client" to="MainGame" method="_on_client_other_player_shoot"]
 [connection signal="player_connected" from="Client" to="MainGame" method="_on_client_player_connected"]
+[connection signal="player_killed" from="Client" to="MainGame" method="_on_client_player_killed"]
 [connection signal="player_moved" from="Client" to="MainGame" method="_on_client_player_moved"]
+[connection signal="player_respawned" from="Client" to="MainGame" method="_on_client_player_respawned"]
 [connection signal="player_shoot" from="Client" to="MainGame" method="_on_client_player_shoot"]

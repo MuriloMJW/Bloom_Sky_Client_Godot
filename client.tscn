@@ -34,6 +34,8 @@ theme_override_constants/margin_right = 5
 
 [node name="Output" type="RichTextLabel" parent="Control/VBoxContainer/OutputContainer/MarginContainer"]
 layout_mode = 2
+text = "PROTITPO DE ALGO
+Versão 0.0.0.0.0.0.1"
 scroll_following = true
 
 [node name="Input" type="LineEdit" parent="Control/VBoxContainer"]
