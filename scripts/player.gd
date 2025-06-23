@@ -5,7 +5,7 @@ signal shoot_pressed(id)
 signal damage_report(damaged_id, damager_id, damage_value)
 signal respawn_pressed(id)
 
-var bullet_scene = load("res://bullet.tscn")
+var bullet_scene = load("res://scenes/bullet.tscn")
 
 var id
 var start_x
@@ -25,6 +25,13 @@ func _ready():
 	$ColorRect.show()
 	$username.show()
 	$username.text = str(id)
+	
+	if(is_team_up):
+		#$username.add_theme_color_override("font_color", Color.AQUA)
+		$ColorRect.color = Color.from_rgba8(99, 255, 255, 255)
+	else:
+		#$username.add_theme_color_override("font_color", Color.DEEP_PINK)
+		$ColorRect.color = Color.from_rgba8(255, 102, 250, 255)
 	
 		
 	
@@ -92,3 +99,5 @@ func respawn(x, y):
 	$CollisionShape2D.disabled = false
 	$ColorRect.show()
 	$username.show()
+	position.x = x
+	position.y = y

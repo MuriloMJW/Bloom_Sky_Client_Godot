@@ -3,7 +3,7 @@ extends Node
 signal player_connected(player_x, player_y, player_id)
 signal other_player_connected(other_player_x, other_player_y, other_player_id)
 signal other_player_disconnected(other_player_id)
-signal player_moved(player_x, player_y, id)
+signal player_moved(player_x, player_y)
 signal other_player_moved(other_player_x, other_player_y, other_player_id)
 signal player_shoot()
 signal player_killed(killed_id)
@@ -12,8 +12,8 @@ signal other_player_shoot(other_player_id)
 
 
 #var websocket_url = "ws://127.0.0.1:8080"
-#var websocket_url = "ws://127.0.0.1:9913"
-var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
+var websocket_url = "ws://127.0.0.1:9913"
+#var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
@@ -92,7 +92,7 @@ func _handle_state_change(state):
 				
 		socket.STATE_CLOSED:
 			print("CLOSED")
-			status_screen.text = "Desconectado"
+			status_screen.text = "[color=red]Desconectado[/color]"
 			
 	
 	return
@@ -236,7 +236,7 @@ func _player_chat():
 
 func _handle_player_connected(buffer):
 	print("===PLAYER CONNECTED===")
-	status_screen.text = "Conectado!"
+	status_screen.text = "Conectado"
 	chat_screen.show()
 	
 	var start_x = buffer.get_u16()
@@ -262,8 +262,8 @@ func _handle_player_moved(buffer):
 	print("===PLAYER MOVED===")
 	var move_x = buffer.get_u16()
 	var move_y = buffer.get_u16()
-	var player_id = buffer.get_u8()
-	emit_signal("player_moved", move_x, move_y, player_id)
+	print("MOVED: ", move_x, " - ", move_y)
+	emit_signal("player_moved", move_x, move_y)
 
 func _handle_other_player_moved(buffer):
 	print("===OTHER PLAYER MOVED===")

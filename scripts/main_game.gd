@@ -83,10 +83,11 @@ func _on_client_other_player_disconnected(other_player_id: Variant) -> void:
 	players_connected.erase(other_player_id)
 
 
-func _on_client_player_moved(player_x: Variant, player_y: Variant, id: Variant) -> void:
-	players_connected[id].position.x = player_x
-	players_connected[id].position.y = player_y
-	pass
+func _on_client_player_moved(player_x: Variant, player_y: Variant) -> void:
+	players_connected[my_id].position.x = player_x
+	players_connected[my_id].position.y = player_y
+
+
 
 
 func _on_client_other_player_moved(other_player_x: Variant, other_player_y: Variant, other_player_id: Variant) -> void:

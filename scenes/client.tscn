@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bfwnxi4mcvuso"]
 
-[ext_resource type="Script" uid="uid://cd074q8qfq5e3" path="res://client.gd" id="1_lgb4g"]
+[ext_resource type="Script" uid="uid://cd074q8qfq5e3" path="res://scripts/client.gd" id="1_lgb4g"]
 
 [node name="Client" type="Node"]
 script = ExtResource("1_lgb4g")
@@ -34,8 +34,10 @@ theme_override_constants/margin_right = 5
 
 [node name="Output" type="RichTextLabel" parent="Control/VBoxContainer/OutputContainer/MarginContainer"]
 layout_mode = 2
+bbcode_enabled = true
 text = "PROTITPO DE ALGO
-Versão 0.0.0.0.0.0.1"
+Versão 0.0.0.0.0.0.1
+"
 scroll_following = true
 
 [node name="Input" type="LineEdit" parent="Control/VBoxContainer"]
@@ -60,6 +62,7 @@ theme_override_constants/margin_bottom = 10
 
 [node name="Status" type="RichTextLabel" parent="Control/PanelContainer/MarginContainer2"]
 layout_mode = 2
+bbcode_enabled = true
 scroll_following = true
 horizontal_alignment = 1
 vertical_alignment = 1

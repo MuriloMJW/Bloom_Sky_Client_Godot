@@ -1,10 +1,10 @@
 [gd_scene load_steps=6 format=3 uid="uid://biqn5vlww8k7b"]
 
-[ext_resource type="Script" uid="uid://tfq3an75qm43" path="res://main.gd" id="1_0xm2m"]
-[ext_resource type="PackedScene" uid="uid://tea8ha7p6hww" path="res://player.tscn" id="1_ig7tw"]
-[ext_resource type="PackedScene" uid="uid://cat57uoigpfw1" path="res://enemy.tscn" id="2_h2yge"]
-[ext_resource type="Script" uid="uid://btpdwj6qwbr1r" path="res://main_game.gd" id="3_h2yge"]
-[ext_resource type="PackedScene" uid="uid://bfwnxi4mcvuso" path="res://client.tscn" id="4_1bvp3"]
+[ext_resource type="Script" uid="uid://tfq3an75qm43" path="res://scripts/main.gd" id="1_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://tea8ha7p6hww" path="res://scenes/player.tscn" id="1_ig7tw"]
+[ext_resource type="PackedScene" uid="uid://cat57uoigpfw1" path="res://scenes/enemy.tscn" id="2_h2yge"]
+[ext_resource type="Script" uid="uid://btpdwj6qwbr1r" path="res://scripts/main_game.gd" id="3_h2yge"]
+[ext_resource type="PackedScene" uid="uid://bfwnxi4mcvuso" path="res://scenes/client.tscn" id="4_1bvp3"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_0xm2m")
