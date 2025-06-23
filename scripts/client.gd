@@ -1,14 +1,16 @@
 extends Node
 
-signal player_connected(player_x, player_y, player_id)
-signal other_player_connected(other_player_x, other_player_y, other_player_id)
+signal player_connected(player_data: PlayerData)
+signal other_player_connected(player_data: PlayerData)
 signal other_player_disconnected(other_player_id)
 signal player_moved(player_x, player_y)
 signal other_player_moved(other_player_x, other_player_y, other_player_id)
 signal player_shoot()
+signal player_damaged(damaged_id)
 signal player_killed(killed_id)
 signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
 signal other_player_shoot(other_player_id)
+signal player_changed_team(player_changed_team_id)
 
 
 #var websocket_url = "ws://127.0.0.1:8080"
@@ -33,6 +35,7 @@ enum Network {
 	REQUEST_PLAYER_SHOOT = 2,
 	REQUEST_PLAYER_DAMAGE = 3,
 	REQUEST_PLAYER_RESPAWN = 4,
+	REQUEST_PLAYER_CHANGE_TEAM = 5,
 	
 	CHAT_MESSAGE = 100,
 	
@@ -46,9 +49,10 @@ enum Network {
 	
 	PLAYER_SHOOT = 105,
 	OTHER_PLAYER_SHOOT = 106,
-	#PLAYER_DAMAGED = 107,
+	PLAYER_DAMAGED = 107,
 	PLAYER_KILLED = 108,
 	PLAYER_RESPAWNED = 109,
+	PLAYER_CHANGED_TEAM = 110,
 	
 	CHAT_RECEIVED = 200
 }
@@ -152,11 +156,18 @@ func receive_packet(packet):
 		Network.OTHER_PLAYER_SHOOT:
 			_handle_other_player_shoot(buffer)
 			
+		Network.PLAYER_DAMAGED:
+			_handle_player_damaged(buffer)
+			
 		Network.PLAYER_KILLED:
 			_handle_player_killed(buffer)
 			
 		Network.PLAYER_RESPAWNED:
 			_handle_player_respawned(buffer)
+			
+		Network.PLAYER_CHANGED_TEAM:
+			_handle_player_changed_team(buffer)
+			
 
 		Network.CHAT_RECEIVED:
 			_handle_chat_received(buffer)
@@ -209,6 +220,13 @@ func _request_player_respawn(player_to_respawn_id):
 	buffer.put_u8(Network.REQUEST_PLAYER_RESPAWN)
 	buffer.put_u8(player_to_respawn_id)
 	_send_packet(buffer)
+	
+func _request_player_change_team():
+	print("===REQUEST PLAYER CHANGE TEAM===")
+	var buffer : StreamPeerBuffer
+	buffer = StreamPeerBuffer.new()
+	buffer.put_u8(Network.REQUEST_PLAYER_CHANGE_TEAM)
+	_send_packet(buffer)
 
 func _player_chat():
 	print("===PLAYER CHAT===")
@@ -239,19 +257,31 @@ func _handle_player_connected(buffer):
 	status_screen.text = "Conectado"
 	chat_screen.show()
 	
-	var start_x = buffer.get_u16()
-	var start_y = buffer.get_u16()
-	my_id = buffer.get_u8()
+	var player_data = PlayerData.new()
+	player_data.id = buffer.get_u8()
+	player_data.x = buffer.get_u16()
+	player_data.y = buffer.get_u16()
+	player_data.team_id = buffer.get_u8()
+	player_data.is_alive = buffer.get_u8()
+	player_data.hp = buffer.get_u8()
 	
-	emit_signal("player_connected", start_x, start_y, my_id)
+	my_id = player_data.id
+	
+	emit_signal("player_connected", player_data)
 	
 
 func _handle_other_player_connected(buffer):
 	print("===OTHER PLAYER CONNECTED===")
-	var start_x = buffer.get_u16()
-	var start_y = buffer.get_u16()
-	var other_player_id = buffer.get_u8()
-	emit_signal("other_player_connected", start_x, start_y, other_player_id)
+	
+	var other_player_data = PlayerData.new()
+	other_player_data.id = buffer.get_u8()
+	other_player_data.x = buffer.get_u16()
+	other_player_data.y = buffer.get_u16()
+	other_player_data.team_id = buffer.get_u8()
+	other_player_data.is_alive = buffer.get_u8()
+	other_player_data.hp = buffer.get_u8()
+	
+	emit_signal("other_player_connected", other_player_data)
 
 func _handle_other_player_disconnected(buffer):
 	print("===OTHER PLAYER DISCONNECTED===")
@@ -281,6 +311,13 @@ func _handle_other_player_shoot(buffer):
 	var other_player_id = buffer.get_u8()
 	emit_signal("other_player_shoot", other_player_id)
 	
+func _handle_player_damaged(buffer):
+	print("===PLAYER DAMAGED===")
+	var player_damaged_id = buffer.get_u8()
+	var player_damager_id = buffer.get_u8()
+	var damage = buffer.get_u8()
+	emit_signal("player_damaged", player_damaged_id, player_damager_id, damage)
+	
 func _handle_player_killed(buffer):
 	print("===PLAYER KILLED===")
 	var player_killed_id = 	buffer.get_u8()
@@ -292,6 +329,11 @@ func _handle_player_respawned(buffer):
 	var player_respawned_x = buffer.get_u16()
 	var player_respawned_y = buffer.get_u16()
 	emit_signal("player_respawned", player_respawned_id, player_respawned_x, player_respawned_y)
+ 
+func _handle_player_changed_team(buffer):
+	print("===PLAYER CHANGED TEAM===")
+	var player_changed_team_id = buffer.get_u8()
+	emit_signal("player_changed_team", player_changed_team_id)
 
 func _handle_chat_received(buffer):
 	#var text_received = socket.get_packet().get_string_from_ascii()
@@ -331,3 +373,6 @@ func _on_player_damage_report(player_damaged_id: Variant, player_damager_id: Var
 
 func _on_respawn_pressed(player_to_respawn_id):
 	_request_player_respawn(player_to_respawn_id)
+	
+func _on_player_change_team_pressed():
+	_request_player_change_team()

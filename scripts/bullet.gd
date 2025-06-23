@@ -1,7 +1,7 @@
 extends Area2D
 
 @export
-var speed = 500
+var speed = -500
 var is_moving_up = true
 var shooter_id = -1
 
