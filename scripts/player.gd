@@ -22,6 +22,17 @@ var hp = -1
 
 var can_move = true
 
+var shoot_damage = 20
+
+func setup(player_data):
+	self.id = player_data.id
+	self.position.x = player_data.x
+	self.position.y = player_data.y
+	self.team_id = player_data.team_id
+	self.team = player_data.team
+	self.is_alive = player_data.is_alive
+	self.hp = player_data.hp
+	
 
 # Fazer uns getters e setter, por ex, set_is_alive,
 # se falso, can_move = false, etc
@@ -32,8 +43,8 @@ func _ready():
 	$ColorRect.show()
 	$username.show()
 	$username.text = str(id)
-	
-	team = "SKY" if team_id == 0 else "BLOOM"
+	$ProgressBar.show()
+	$ProgressBar.value = self.hp
 
 	if(team == "SKY"):
 		#$username.add_theme_color_override("font_color", Color.AQUA)
@@ -52,7 +63,7 @@ func _process(delta):
 	#position = player_position
 	#print(player_position)
 	
-	if(is_my_player and is_alive and can_move):
+	if(is_my_player and is_alive):
 		if(Input.is_action_just_pressed("shoot")):
 			
 			var mouse_position = get_global_mouse_position()
@@ -95,39 +106,45 @@ func shoot():
 		bullet.shooter_id = id
 		get_parent().add_child(bullet)
 		
-		
 	
 func _on_area_entered(area: Area2D) -> void:
 	
 	if(is_my_player and area.is_in_group("bullet") and area.shooter_id != id):
 		print("====GOT HIT====")
 		print(hp)
-		emit_signal("damage_report", id, area.shooter_id, 25)
+		emit_signal("damage_report", id, area.shooter_id, shoot_damage)
 		
-func take_damage(damaged_id, damager_id, damage):
-	hp -= damage
+func take_damage(damager_id, damage, player_hp):
+	self.hp = player_hp
+	$ProgressBar.value = self.hp
 
 func kill():
 	#set_process(false)
-	is_alive = false
+	self.hp = 0 # Não pode
+	is_alive = false # Não pode
 	$CollisionShape2D.disabled = true
 	$ColorRect.hide()
 	$username.hide()
+	$ProgressBar.value = self.hp
+	$ProgressBar.hide()
 	
 	
 func respawn(x, y):
 	#set_process(true)
-	is_alive = true
+	self.hp = 100 # Não pode
+	is_alive = true # Não pode
 	$CollisionShape2D.disabled = false
 	$ColorRect.show()
 	$username.show()
 	position.x = x
 	position.y = y
+	$ProgressBar.value = self.hp
+	$ProgressBar.show()
 	
 func change_team():	
-	team_id = 1 if team_id == 0 else 0
+	team_id = 1 if team_id == 0 else 0 # Não pode
 	
-	team = "SKY" if team_id == 0 else "BLOOM"
+	team = "SKY" if team_id == 0 else "BLOOM" # Não pode
 
 	if(team == "SKY"):
 		#$username.add_theme_color_override("font_color", Color.AQUA)

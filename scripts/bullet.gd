@@ -18,9 +18,9 @@ func _process(delta: float) -> void:
 
 
 func _on_area_entered(area: Area2D) -> void:
-	
-	if(area.id != shooter_id):
-		queue_free()
+	if area.is_in_group("player"):
+		if(area.id != shooter_id):
+			queue_free()
 		
 
 

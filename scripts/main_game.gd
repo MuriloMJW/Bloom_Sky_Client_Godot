@@ -12,47 +12,18 @@ var players_connected = {}
 func _ready() -> void:
 	pass
 
-
 func _process(delta: float) -> void:
 	pass
-	
-	
-			#players_connected[my_id].position = mouse_position
-			
-			#emit_signal("player_moved", x, y, my_id)
-			
-		#var mouse_position = get_global_mouse_position()
-		
-		#players_connected[my_id].position = mouse_position
-		#var x = mouse_position.x
-		#var y = mouse_position.y
-		#emit_signal("player_moved", x, y, my_id)
 
 func _on_mob_spawn_timer_timeout() -> void:
 	spawn_enemy()
-	
 		
-func spawn_enemy():
-	var spawn_x = randi_range(0, get_viewport().get_visible_rect().size.x)
-	var spawn_y = 0
-	var enemy = enemy_scene.instantiate()
-	enemy.position.x = spawn_x
-	enemy.position.y = spawn_y
-	
-	add_child(enemy)
-	
 
 func spawn_player(player_data):
 	var new_player = player_scene.instantiate()
 	
 	
-	new_player.id = player_data.id
-	new_player.position.x = player_data.x
-	new_player.position.y = player_data.y
-	new_player.team_id = player_data.team_id
-	new_player.is_alive = player_data.is_alive
-	new_player.hp = player_data.hp
-	
+	new_player.setup(player_data)
 	new_player.is_my_player = (my_id == player_data.id)
 	
 	players_connected[new_player.id] = new_player
@@ -69,6 +40,15 @@ func spawn_player(player_data):
 		new_player.respawn_pressed.connect(client._on_respawn_pressed)
 		new_player.change_team_pressed.connect(client._on_player_change_team_pressed)
 
+func spawn_enemy():
+	var spawn_x = randi_range(0, get_viewport().get_visible_rect().size.x)
+	var spawn_y = 0
+	var enemy = enemy_scene.instantiate()
+	enemy.position.x = spawn_x
+	enemy.position.y = spawn_y
+	
+	add_child(enemy)
+	
 
 
 # --- [ SINAIS RECEBIDOS ] --- #
@@ -107,8 +87,8 @@ func _on_client_other_player_shoot(other_player_id: Variant) -> void:
 	players_connected[other_player_id].shoot()
 
 
-func _on_client_player_damaged(damaged_id: Variant, damager_id: Variant, damage: Variant) -> void:
-	players_connected[damaged_id].take_damage(damaged_id, damager_id, damage)
+func _on_client_player_damaged(damaged_id: Variant, damager_id: Variant, damage: Variant, player_hp: Variant) -> void:
+	players_connected[damaged_id].take_damage(damager_id, damage, player_hp)
 
 
 func _on_client_player_killed(killed_id: Variant) -> void:

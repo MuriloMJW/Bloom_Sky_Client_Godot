@@ -15,11 +15,15 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Control"]
 layout_mode = 1
-anchors_preset = 9
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 5.0
-offset_right = 250.0
-grow_vertical = 2
+offset_left = 3.0
+offset_top = -200.0
+offset_right = -3.0
+grow_horizontal = 2
+grow_vertical = 0
 
 [node name="OutputContainer" type="PanelContainer" parent="Control/VBoxContainer"]
 layout_mode = 2
@@ -34,9 +38,10 @@ theme_override_constants/margin_right = 5
 
 [node name="Output" type="RichTextLabel" parent="Control/VBoxContainer/OutputContainer/MarginContainer"]
 layout_mode = 2
+theme_override_font_sizes/normal_font_size = 14
 bbcode_enabled = true
 text = "PROTITPO DE ALGO
-Versão 0.0.0.0.0.0.1
+Versão 0.0.0.0.0.2
 "
 scroll_following = true
 
@@ -45,26 +50,37 @@ layout_mode = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="Control"]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -159.0
+offset_right = 159.0
 offset_bottom = 40.0
-grow_horizontal = 0
 
-[node name="MarginContainer2" type="MarginContainer" parent="Control/PanelContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 10
-
-[node name="Status" type="RichTextLabel" parent="Control/PanelContainer/MarginContainer2"]
+[node name="Status" type="RichTextLabel" parent="Control/PanelContainer"]
 layout_mode = 2
 bbcode_enabled = true
+text = "Offline"
 scroll_following = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="PanelContainer2" type="PanelContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -90.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="Ping" type="RichTextLabel" parent="Control/PanelContainer2"]
+layout_mode = 2
+bbcode_enabled = true
+text = "0000ms"
+scroll_following = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PingTimer" type="Timer" parent="."]
+autostart = true
+ignore_time_scale = true
+
 [connection signal="text_submitted" from="Control/VBoxContainer/Input" to="." method="_on_input_text_submitted"]
+[connection signal="timeout" from="PingTimer" to="." method="_on_ping_timer_timeout"]

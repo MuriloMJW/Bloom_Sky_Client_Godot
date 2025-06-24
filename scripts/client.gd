@@ -6,16 +6,15 @@ signal other_player_disconnected(other_player_id)
 signal player_moved(player_x, player_y)
 signal other_player_moved(other_player_x, other_player_y, other_player_id)
 signal player_shoot()
-signal player_damaged(damaged_id)
+signal player_damaged(damaged_id, player_damager_id, damage, player_hp)
 signal player_killed(killed_id)
 signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
 signal other_player_shoot(other_player_id)
 signal player_changed_team(player_changed_team_id)
 
-
-#var websocket_url = "ws://127.0.0.1:8080"
 var websocket_url = "ws://127.0.0.1:9913"
 #var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
+#var websocket_url = "ws://127.0.0.1:8080"
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
@@ -24,7 +23,8 @@ var my_id = -1
 @onready var chat_screen = $Control/VBoxContainer
 @onready var input_chat = $Control/VBoxContainer/Input
 @onready var output_chat = $Control/VBoxContainer/OutputContainer/MarginContainer/Output
-@onready var status_screen = $Control/PanelContainer/MarginContainer2/Status
+@onready var status_screen = $Control/PanelContainer/Status
+@onready var ping_screen = $Control/PanelContainer2/Ping
 
 enum Network {
 	# Client -> Server
@@ -38,6 +38,8 @@ enum Network {
 	REQUEST_PLAYER_CHANGE_TEAM = 5,
 	
 	CHAT_MESSAGE = 100,
+	
+	PING = 254,
 	
 	# Server -> Client
 	PLAYER_CONNECTED = 100,
@@ -54,7 +56,9 @@ enum Network {
 	PLAYER_RESPAWNED = 109,
 	PLAYER_CHANGED_TEAM = 110,
 	
-	CHAT_RECEIVED = 200
+	CHAT_RECEIVED = 200,
+	
+	PONG = 255
 }
 
 
@@ -128,11 +132,9 @@ func receive_packet(packet):
 		print("Byte %d: %d" % [i, b])
 	'''
 	
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
-	buffer.data_array = packet
+	var buffer = MyBuffer.new(packet)
 	
-	var msgid = buffer.get_u8()
+	var msgid = buffer.read_u8()
 	
 	match msgid:
 		Network.PLAYER_CONNECTED:
@@ -172,6 +174,9 @@ func receive_packet(packet):
 		Network.CHAT_RECEIVED:
 			_handle_chat_received(buffer)
 			
+		Network.PONG:
+			_handle_pong(buffer)
+			
 			
 		_:
 			print("PACOTE NÃO TRATADO: ", msgid)
@@ -182,50 +187,50 @@ func receive_packet(packet):
 
 func _request_connect():
 	print("===REQUEST CONNECT===")
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
-	buffer.put_u8(Network.REQUEST_CONNECT)
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.REQUEST_CONNECT)
 	_send_packet(buffer)
 	
 func _request_player_move(move_x, move_y):
 	print("===REQUEST PLAYER MOVE===")
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
-	buffer.put_u8(Network.REQUEST_PLAYER_MOVE)
-	buffer.put_u16(move_x)
-	buffer.put_u16(move_y)
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.REQUEST_PLAYER_MOVE)
+	buffer.write_u16(move_x)
+	buffer.write_u16(move_y)
 	_send_packet(buffer)
 	
 func _request_player_shoot():
 	print("===REQUEST PLAYER SHOOT===")
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
-	buffer.put_u8(Network.REQUEST_PLAYER_SHOOT)
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.REQUEST_PLAYER_SHOOT)
 	_send_packet(buffer)
 	
 func _request_player_damage(player_damaged_id, player_damager_id, damage_value):
 	print("===REQUEST PLAYER DAMAGE===")
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
-	buffer.put_u8(Network.REQUEST_PLAYER_DAMAGE)
-	buffer.put_u8(player_damaged_id)
-	buffer.put_u8(player_damager_id)
-	buffer.put_u8(damage_value)
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.REQUEST_PLAYER_DAMAGE)
+	buffer.write_u8(player_damaged_id)
+	buffer.write_u8(player_damager_id)
+	buffer.write_u8(damage_value)
 	_send_packet(buffer)
 
 func _request_player_respawn(player_to_respawn_id):
 	print("===REQUEST PLAYER DAMAGE===")
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
-	buffer.put_u8(Network.REQUEST_PLAYER_RESPAWN)
-	buffer.put_u8(player_to_respawn_id)
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.REQUEST_PLAYER_RESPAWN)
+	buffer.write_u8(player_to_respawn_id)
 	_send_packet(buffer)
 	
 func _request_player_change_team():
 	print("===REQUEST PLAYER CHANGE TEAM===")
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
-	buffer.put_u8(Network.REQUEST_PLAYER_CHANGE_TEAM)
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.REQUEST_PLAYER_CHANGE_TEAM)
 	_send_packet(buffer)
 
 func _player_chat():
@@ -236,20 +241,24 @@ func _player_chat():
 		
 	input_chat.text = ""
 		
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
-	
-	
-	buffer.put_u8(Network.CHAT_MESSAGE)
-	
-	var text_bytes = text.to_ascii_buffer()
-	text_bytes.append(0) 
-	print(text_bytes)
-	buffer.put_data(text_bytes)
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.CHAT_MESSAGE)
+	buffer.write_string(text)
 
 	_send_packet(buffer)
 	
+
+func _ping():
+	var timestamp_now = Time.get_ticks_msec()
 	
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.PING)
+	buffer.write_u64(timestamp_now)
+	_send_packet(buffer)
+	
+
 # --- [ RESPOSTAS DO SERVIDOR ] --- #
 
 func _handle_player_connected(buffer):
@@ -258,12 +267,13 @@ func _handle_player_connected(buffer):
 	chat_screen.show()
 	
 	var player_data = PlayerData.new()
-	player_data.id = buffer.get_u8()
-	player_data.x = buffer.get_u16()
-	player_data.y = buffer.get_u16()
-	player_data.team_id = buffer.get_u8()
-	player_data.is_alive = buffer.get_u8()
-	player_data.hp = buffer.get_u8()
+	player_data.id = buffer.read_u8()
+	player_data.x = buffer.read_u16()
+	player_data.y = buffer.read_u16()
+	player_data.team_id = buffer.read_u8()
+	player_data.team = buffer.read_string()
+	player_data.is_alive = buffer.read_u8()
+	player_data.hp = buffer.read_u8()
 	
 	my_id = player_data.id
 	
@@ -274,32 +284,33 @@ func _handle_other_player_connected(buffer):
 	print("===OTHER PLAYER CONNECTED===")
 	
 	var other_player_data = PlayerData.new()
-	other_player_data.id = buffer.get_u8()
-	other_player_data.x = buffer.get_u16()
-	other_player_data.y = buffer.get_u16()
-	other_player_data.team_id = buffer.get_u8()
-	other_player_data.is_alive = buffer.get_u8()
-	other_player_data.hp = buffer.get_u8()
+	other_player_data.id = buffer.read_u8()
+	other_player_data.x = buffer.read_u16()
+	other_player_data.y = buffer.read_u16()
+	other_player_data.team_id = buffer.read_u8()
+	other_player_data.team = buffer.read_string()
+	other_player_data.is_alive = buffer.read_u8()
+	other_player_data.hp = buffer.read_u8()
 	
 	emit_signal("other_player_connected", other_player_data)
 
 func _handle_other_player_disconnected(buffer):
 	print("===OTHER PLAYER DISCONNECTED===")
-	var other_player_id = buffer.get_u8()
+	var other_player_id = buffer.read_u8()
 	emit_signal("other_player_disconnected", other_player_id)
 
 func _handle_player_moved(buffer):
 	print("===PLAYER MOVED===")
-	var move_x = buffer.get_u16()
-	var move_y = buffer.get_u16()
+	var move_x = buffer.read_u16()
+	var move_y = buffer.read_u16()
 	print("MOVED: ", move_x, " - ", move_y)
 	emit_signal("player_moved", move_x, move_y)
 
 func _handle_other_player_moved(buffer):
 	print("===OTHER PLAYER MOVED===")
-	var move_x = buffer.get_u16()
-	var move_y = buffer.get_u16()
-	var other_player_id = buffer.get_u8()
+	var move_x = buffer.read_u16()
+	var move_y = buffer.read_u16()
+	var other_player_id = buffer.read_u8()
 	emit_signal("other_player_moved", move_x, move_y, other_player_id)
 
 func _handle_player_shoot(buffer):
@@ -308,41 +319,52 @@ func _handle_player_shoot(buffer):
 	
 func _handle_other_player_shoot(buffer):
 	print("===OTHER PLAYER SHOOT===")
-	var other_player_id = buffer.get_u8()
+	var other_player_id = buffer.read_u8()
 	emit_signal("other_player_shoot", other_player_id)
 	
 func _handle_player_damaged(buffer):
 	print("===PLAYER DAMAGED===")
-	var player_damaged_id = buffer.get_u8()
-	var player_damager_id = buffer.get_u8()
-	var damage = buffer.get_u8()
-	emit_signal("player_damaged", player_damaged_id, player_damager_id, damage)
+	var player_damaged_id = buffer.read_u8()
+	var player_damager_id = buffer.read_u8()
+	var damage = buffer.read_u8()
+	var player_hp = buffer.read_u8()
+	emit_signal("player_damaged", player_damaged_id, player_damager_id, damage, player_hp)
 	
 func _handle_player_killed(buffer):
 	print("===PLAYER KILLED===")
-	var player_killed_id = 	buffer.get_u8()
+	var player_killed_id = 	buffer.read_u8()
 	emit_signal("player_killed", player_killed_id)
 
 func _handle_player_respawned(buffer):
 	print("===PLAYER RESPAWNED===")
-	var player_respawned_id = 	buffer.get_u8()
-	var player_respawned_x = buffer.get_u16()
-	var player_respawned_y = buffer.get_u16()
+	var player_respawned_id = 	buffer.read_u8()
+	var player_respawned_x = buffer.read_u16()
+	var player_respawned_y = buffer.read_u16()
 	emit_signal("player_respawned", player_respawned_id, player_respawned_x, player_respawned_y)
  
 func _handle_player_changed_team(buffer):
 	print("===PLAYER CHANGED TEAM===")
-	var player_changed_team_id = buffer.get_u8()
+	var player_changed_team_id = buffer.read_u8()
 	emit_signal("player_changed_team", player_changed_team_id)
 
 func _handle_chat_received(buffer):
-	#var text_received = socket.get_packet().get_string_from_ascii()
-	var string_size = buffer.get_size() - buffer.get_position()
-	var text_received = buffer.get_utf8_string(string_size)
+	
+	var text_received = buffer.read_string()
+	
 	print("Texto recebido: ", text_received)
 	
 	output_chat.text += (text_received+"\n")
 	
+func _handle_pong(buffer):
+	var timestamp_received = buffer.read_u64()
+	var timestamp_now = Time.get_ticks_msec()
+	var ping = timestamp_now - timestamp_received
+	
+	#print("HANDLE: ", timestamp_received)
+	#print("HANDLE: ", timestamp_now)
+	
+	
+	ping_screen.text = str(ping)+"ms"
 	
 	
 func _on_input_text_submitted(new_text: String) -> void:
@@ -351,14 +373,14 @@ func _on_input_text_submitted(new_text: String) -> void:
 # --- [ SINAIS RECEBIDOS ] --- #
 
 func _on_main_game_player_moved(x: Variant, y: Variant, id: Variant) -> void:
-	var buffer : StreamPeerBuffer
-	buffer = StreamPeerBuffer.new()
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
 	buffer.clear()
 	buffer.seek(0)
-	buffer.put_u8(Network.REQUEST_PLAYER_MOVE)
-	buffer.put_u16(x)
-	buffer.put_u16(y)
-	buffer.put_u8(my_id)
+	buffer.write_u8(Network.REQUEST_PLAYER_MOVE)
+	buffer.write_u16(x)
+	buffer.write_u16(y)
+	buffer.write_u8(my_id)
 	
 	_send_packet(buffer)
 
@@ -376,3 +398,6 @@ func _on_respawn_pressed(player_to_respawn_id):
 	
 func _on_player_change_team_pressed():
 	_request_player_change_team()
+
+func _on_ping_timer_timeout() -> void:
+	_ping() # Replace with function body.
