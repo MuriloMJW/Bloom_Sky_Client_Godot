@@ -88,11 +88,17 @@ func _on_client_other_player_shoot(other_player_id: Variant) -> void:
 
 
 func _on_client_player_damaged(damaged_id: Variant, damager_id: Variant, damage: Variant, player_hp: Variant) -> void:
-	players_connected[damaged_id].take_damage(damager_id, damage, player_hp)
+	players_connected[damaged_id].hp = player_hp
+	players_connected[damaged_id].take_damage()
+	
 
 
-func _on_client_player_killed(killed_id: Variant) -> void:
-	players_connected[killed_id].kill()
+func _on_client_player_killed(killed_id: Variant, damager_id: Variant, damage: Variant, player_is_alive, player_hp: Variant) -> void:
+	players_connected[killed_id].hp = player_hp
+	players_connected[killed_id].is_alive = player_is_alive
+	
+	# Não descartei a ideia de chamar animações por aqui
+	
 
 
 func _on_client_player_respawned(player_respawned_id: Variant, player_respawned_x: Variant, player_respawned_y: Variant) -> void:

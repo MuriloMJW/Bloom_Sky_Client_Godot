@@ -7,10 +7,16 @@ signal player_moved(player_x, player_y)
 signal other_player_moved(other_player_x, other_player_y, other_player_id)
 signal player_shoot()
 signal player_damaged(damaged_id, player_damager_id, damage, player_hp)
-signal player_killed(killed_id)
+signal player_killed(killed_id, player_damaged_id, player_damager_id, damage, player_is_alive, player_hp)
 signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
 signal other_player_shoot(other_player_id)
 signal player_changed_team(player_changed_team_id)
+
+@onready var chat_screen = $Control/VBoxContainer
+@onready var input_chat = $Control/VBoxContainer/Input
+@onready var output_chat = $Control/VBoxContainer/OutputContainer/MarginContainer/Output
+@onready var status_screen = $Control/PanelContainer/Status
+@onready var ping_screen = $Control/PanelContainer2/Ping
 
 var websocket_url = "ws://127.0.0.1:9913"
 #var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
@@ -19,12 +25,6 @@ var websocket_url = "ws://127.0.0.1:9913"
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
 var my_id = -1
-
-@onready var chat_screen = $Control/VBoxContainer
-@onready var input_chat = $Control/VBoxContainer/Input
-@onready var output_chat = $Control/VBoxContainer/OutputContainer/MarginContainer/Output
-@onready var status_screen = $Control/PanelContainer/Status
-@onready var ping_screen = $Control/PanelContainer2/Ping
 
 enum Network {
 	# Client -> Server
@@ -170,7 +170,6 @@ func receive_packet(packet):
 		Network.PLAYER_CHANGED_TEAM:
 			_handle_player_changed_team(buffer)
 			
-
 		Network.CHAT_RECEIVED:
 			_handle_chat_received(buffer)
 			
@@ -332,8 +331,12 @@ func _handle_player_damaged(buffer):
 	
 func _handle_player_killed(buffer):
 	print("===PLAYER KILLED===")
-	var player_killed_id = 	buffer.read_u8()
-	emit_signal("player_killed", player_killed_id)
+	var player_damaged_id = buffer.read_u8()
+	var player_damager_id = buffer.read_u8()
+	var damage = buffer.read_u8()
+	var player_is_alive = buffer.read_u8()
+	var player_hp = buffer.read_u8()
+	emit_signal("player_killed", player_damaged_id, player_damager_id, damage, player_is_alive, player_hp)
 
 func _handle_player_respawned(buffer):
 	print("===PLAYER RESPAWNED===")
