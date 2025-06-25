@@ -39,6 +39,7 @@ func spawn_player(player_data):
 		new_player.damage_report.connect(client._on_player_damage_report)
 		new_player.respawn_pressed.connect(client._on_respawn_pressed)
 		new_player.change_team_pressed.connect(client._on_player_change_team_pressed)
+		new_player.sonic_pressed.connect(client._on_player_sonic_pressed)
 
 func spawn_enemy():
 	var spawn_x = randi_range(0, get_viewport().get_visible_rect().size.x)
@@ -89,7 +90,7 @@ func _on_client_other_player_shoot(other_player_id: Variant) -> void:
 
 func _on_client_player_damaged(damaged_id: Variant, damager_id: Variant, damage: Variant, player_hp: Variant) -> void:
 	players_connected[damaged_id].hp = player_hp
-	players_connected[damaged_id].take_damage()
+	#players_connected[damaged_id].take_damage()
 	
 
 
@@ -107,3 +108,7 @@ func _on_client_player_respawned(player_respawned_id: Variant, player_respawned_
 
 func _on_client_player_changed_team(player_changed_team_id: Variant) -> void:
 	players_connected[player_changed_team_id].change_team()
+
+
+func _on_client_player_sonicked(player_sonicked_id: Variant) -> void:
+	players_connected[player_sonicked_id].sonic()

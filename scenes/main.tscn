@@ -31,3 +31,4 @@ enemy_scene = ExtResource("2_h2yge")
 [connection signal="player_moved" from="Client" to="MainGame" method="_on_client_player_moved"]
 [connection signal="player_respawned" from="Client" to="MainGame" method="_on_client_player_respawned"]
 [connection signal="player_shoot" from="Client" to="MainGame" method="_on_client_player_shoot"]
+[connection signal="player_sonicked" from="Client" to="MainGame" method="_on_client_player_sonicked"]

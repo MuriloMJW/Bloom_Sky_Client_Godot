@@ -5,6 +5,7 @@ signal shoot_pressed(id)
 signal damage_report(damaged_id, damager_id, damage_value)
 signal respawn_pressed(id)
 signal change_team_pressed()
+signal sonic_pressed()
 
 @onready var username_label = $username
 @onready var hp_bar = $ProgressBar
@@ -24,8 +25,8 @@ var team: String
 var team_id: int
 var is_team_up: bool
 
-var is_alive : bool:		set = set_is_alive
-var hp : int:	set = set_hp
+var is_alive : bool: set = set_is_alive
+var hp : int: set = set_hp
 
 
 
@@ -62,7 +63,7 @@ func setup(player_data):
 	self.team = player_data.team
 	self.is_alive = player_data.is_alive
 	self.hp = player_data.hp
-	
+	# self.is_sonicking = false
 
 # Fazer uns getters e setter, por ex, set_is_alive,
 # se falso, can_move = false, etc
@@ -80,9 +81,7 @@ func _ready():
 	self.hp_bar_style_box = shared_style_box.duplicate()
 	hp_bar.add_theme_stylebox_override("fill", self.hp_bar_style_box)
 	
-	update_hp_visual()
-	update_team_visual()
-	update_is_alive_visual()
+	update_all_visuals()
 
 func _process(delta):
 	#var player_position = Vector2(get_global_mouse_position().x,  start_y)
@@ -107,7 +106,7 @@ func _process(delta):
 			emit_signal("change_team_pressed")
 			
 		if(Input.is_action_just_pressed("sonic_input")):
-			animation.play("sonic")
+			emit_signal("sonic_pressed")
 						
 	if(is_my_player and !is_alive and Input.is_action_just_pressed("respawn_input")):
 		#respawn(position.x, position.y)
@@ -168,6 +167,9 @@ func change_team():
 	team_id = 1 if team_id == 0 else 0 # Não pode
 	team = "SKY" if team_id == 0 else "BLOOM" # Não pode
 	update_team_visual()
+	
+func sonic():
+	animation.play("sonic")
 	
 func kill():
 

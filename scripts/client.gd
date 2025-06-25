@@ -11,16 +11,22 @@ signal player_killed(killed_id, player_damaged_id, player_damager_id, damage, pl
 signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
 signal other_player_shoot(other_player_id)
 signal player_changed_team(player_changed_team_id)
+signal player_sonicked(player_sonicked_id)
 
 @onready var chat_screen = $Control/VBoxContainer
 @onready var input_chat = $Control/VBoxContainer/Input
 @onready var output_chat = $Control/VBoxContainer/OutputContainer/MarginContainer/Output
 @onready var status_screen = $Control/PanelContainer/Status
 @onready var ping_screen = $Control/PanelContainer2/Ping
+@onready var ping_timer: Timer = $PingTimer
+
 
 var websocket_url = "ws://127.0.0.1:9913"
 #var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
 #var websocket_url = "ws://127.0.0.1:8080"
+var game_title = "[color='yellow']PROTOTIP DIALGO[/color]\n"
+var version = "[color='yellow']Versão 0.0.0.36 Prototype - 25/06/2025 [/color]"
+var ping_on = false
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
@@ -36,6 +42,7 @@ enum Network {
 	REQUEST_PLAYER_DAMAGE = 3,
 	REQUEST_PLAYER_RESPAWN = 4,
 	REQUEST_PLAYER_CHANGE_TEAM = 5,
+	REQUEST_PLAYER_SONIC = 6,
 	
 	CHAT_MESSAGE = 100,
 	
@@ -55,6 +62,7 @@ enum Network {
 	PLAYER_KILLED = 108,
 	PLAYER_RESPAWNED = 109,
 	PLAYER_CHANGED_TEAM = 110,
+	PLAYER_SONICKED = 111,
 	
 	CHAT_RECEIVED = 200,
 	
@@ -64,6 +72,9 @@ enum Network {
 
 
 func _ready() -> void:
+	output_chat.text = game_title
+	output_chat.text += version+"\n"
+	ping_timer.autostart = ping_on
 	chat_screen.hide()
 	socket.connect_to_url(websocket_url)
 
@@ -170,6 +181,9 @@ func receive_packet(packet):
 		Network.PLAYER_CHANGED_TEAM:
 			_handle_player_changed_team(buffer)
 			
+		Network.PLAYER_SONICKED:
+			_handle_player_sonicked(buffer)
+			
 		Network.CHAT_RECEIVED:
 			_handle_chat_received(buffer)
 			
@@ -230,6 +244,13 @@ func _request_player_change_team():
 	var buffer : MyBuffer
 	buffer = MyBuffer.new()
 	buffer.write_u8(Network.REQUEST_PLAYER_CHANGE_TEAM)
+	_send_packet(buffer)
+
+func _request_player_sonic():
+	print("===REQUEST PLAYER SONIC===")
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.REQUEST_PLAYER_SONIC)
 	_send_packet(buffer)
 
 func _player_chat():
@@ -349,6 +370,12 @@ func _handle_player_changed_team(buffer):
 	print("===PLAYER CHANGED TEAM===")
 	var player_changed_team_id = buffer.read_u8()
 	emit_signal("player_changed_team", player_changed_team_id)
+	
+func _handle_player_sonicked(buffer):
+	print("===PLAYER SONICKED===")
+	var player_sonicked_id = buffer.read_u8()
+	emit_signal("player_sonicked", player_sonicked_id)
+	
 
 func _handle_chat_received(buffer):
 	
@@ -401,6 +428,9 @@ func _on_respawn_pressed(player_to_respawn_id):
 	
 func _on_player_change_team_pressed():
 	_request_player_change_team()
+	
+func _on_player_sonic_pressed():
+	_request_player_sonic()
 
 func _on_ping_timer_timeout() -> void:
 	_ping() # Replace with function body.
