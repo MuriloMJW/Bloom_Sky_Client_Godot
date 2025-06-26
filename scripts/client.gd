@@ -10,7 +10,7 @@ signal player_killed(killed_id, player_damaged_id, player_damager_id, damage, pl
 signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
 signal player_shoot(player_id)
 signal player_changed_team(player_changed_team_id)
-signal player_sonicked(player_sonicked_id)
+#signal player_sonicked(player_sonicked_id)
 signal player_updated(player_data: PlayerData)
 
 @onready var chat_screen = $Control/VBoxContainer
@@ -62,7 +62,7 @@ enum Network {
 	#PLAYER_KILLED = 108,
 	#PLAYER_RESPAWNED = 109,
 	#PLAYER_CHANGED_TEAM = 110,
-	PLAYER_SONICKED = 111,
+	#PLAYER_SONICKED = 111,
 	
 	PLAYER_UPDATED = 112,
 	CHAT_RECEIVED = 200,
@@ -180,8 +180,8 @@ func receive_packet(packet):
 		#Network.PLAYER_CHANGED_TEAM:
 		#	_handle_player_changed_team(buffer)
 			
-		Network.PLAYER_SONICKED:
-			_handle_player_sonicked(buffer)
+		#Network.PLAYER_SONICKED:
+		#	_handle_player_sonicked(buffer)
 		
 		Network.PLAYER_UPDATED:
 			_handle_player_updated(buffer)
@@ -291,13 +291,14 @@ func _handle_player_updated(buffer):
 	print("MASK: ", mask)
 	
 	# ====         BITMASK         === #
-	var BIT_X            = 1 << 0 # 0000 0001
-	var BIT_Y            = 1 << 1 # 0000 0010
-	var BIT_IS_ALIVE     = 1 << 2 # 0000 0100
-	var BIT_HP           = 1 << 3 # 0000 1000
-	var BIT_TEAM_ID      = 1 << 4 # 0001 0000
-	var BIT_TEAM         = 1 << 5 # 0010 0000
-	var BIT_TOTAL_KILLS  = 1 << 6 # 0010 0000
+	var BIT_X             = 1 << 0 # 0000 0001
+	var BIT_Y             = 1 << 1 # 0000 0010
+	var BIT_IS_ALIVE      = 1 << 2 # 0000 0100
+	var BIT_HP            = 1 << 3 # 0000 1000
+	var BIT_TEAM_ID       = 1 << 4 # 0001 0000
+	var BIT_TEAM          = 1 << 5 # 0010 0000
+	var BIT_TOTAL_KILLS   = 1 << 6 # 0100 0000
+	var BIT_IS_SONIC_MODE = 1 << 7 # 1000 0000
 	
 	
 	if BIT_X & mask:
@@ -314,6 +315,8 @@ func _handle_player_updated(buffer):
 		player_data.team = buffer.read_string()
 	if BIT_TOTAL_KILLS & mask:
 		player_data.total_kills = buffer.read_u8()
+	if BIT_IS_SONIC_MODE & mask:
+		player_data.is_sonic_mode = buffer.read_u8()
 		
 	emit_signal("player_updated", player_data)
 		
@@ -332,6 +335,7 @@ func _handle_player_connected(buffer):
 	player_data.team = buffer.read_string()
 	player_data.is_alive = buffer.read_u8()
 	player_data.hp = buffer.read_u8()
+	player_data.is_sonic_mode = buffer.read_u8()
 	
 	my_id = player_data.id
 	
@@ -349,6 +353,7 @@ func _handle_other_player_connected(buffer):
 	other_player_data.team = buffer.read_string()
 	other_player_data.is_alive = buffer.read_u8()
 	other_player_data.hp = buffer.read_u8()
+	other_player_data.is_sonic_mode = buffer.read_u8()
 	
 	emit_signal("other_player_connected", other_player_data)
 
@@ -409,7 +414,7 @@ func _handle_player_changed_team(buffer):
 func _handle_player_sonicked(buffer):
 	print("===PLAYER SONICKED===")
 	var player_sonicked_id = buffer.read_u8()
-	emit_signal("player_sonicked", player_sonicked_id)
+	#emit_signal("player_sonicked", player_sonicked_id)
 	
 
 func _handle_chat_received(buffer):
