@@ -21,13 +21,16 @@ var start_x: int
 var start_y: int
 
 var is_my_player: bool
-var team: String
-var team_id: int
+
+var team_id: int: set = set_team_id
+var team: String: set = set_team
+
 var is_team_up: bool
 
-var is_alive : bool: set = set_is_alive
+var is_alive: bool: set = set_is_alive
 var hp : int: set = set_hp
 
+var total_kills: int: set = set_total_kills
 
 
 var shoot_damage := 20
@@ -35,6 +38,23 @@ var shoot_damage := 20
 # --- Variáveis de Animação
 var is_dying: bool = false
 
+# --- Setters --- #
+
+func set_team_id(value):
+	if(self.team_id == value):
+		return
+	
+	team_id = value
+	if(is_node_ready()):
+		pass
+		
+func set_team(value):
+	if(self.team == value):
+		return
+	
+	team = value
+	if(is_node_ready()):
+		update_all_visuals()
 
 func set_is_alive(value):
 	if(self.is_alive == value):
@@ -44,25 +64,41 @@ func set_is_alive(value):
 	if(is_node_ready()):
 		if(!is_alive):
 			self.kill()
+		else:
+			self.respawn()
 		update_all_visuals()
 		
 
 func set_hp(value):
 	hp = value
-	
 	# Se a barra de HP já está instanciada
 	if(is_node_ready()):
 		update_hp_visual()
 
+func set_total_kills(value):
+	total_kills = value
+	increase_size()
+
 
 func setup(player_data):
-	self.id = player_data.id
-	self.position.x = player_data.x
-	self.position.y = player_data.y
-	self.team_id = player_data.team_id
-	self.team = player_data.team
-	self.is_alive = player_data.is_alive
-	self.hp = player_data.hp
+	if player_data.id != null:
+		self.id = player_data.id
+
+	if player_data.x != null:
+		self.position.x = player_data.x
+	if player_data.y != null:
+		self.position.y = player_data.y
+	if player_data.team_id != null:
+		self.team_id = player_data.team_id
+	if player_data.team != null:
+		self.team = player_data.team
+	if player_data.is_alive != null:
+		self.is_alive = player_data.is_alive
+	if player_data.hp != null:
+		self.hp = player_data.hp
+	if player_data.total_kills != null:
+		self.total_kills = player_data.total_kills
+	
 	# self.is_sonicking = false
 
 # Fazer uns getters e setter, por ex, set_is_alive,
@@ -100,7 +136,7 @@ func _process(delta):
 			emit_signal("shoot_pressed", id)
 	
 		if(Input.is_action_just_pressed("die_input")):
-			emit_signal("damage_report", id, 123, 100)
+			emit_signal("damage_report", id, 123, 10)
 		
 		if(Input.is_action_just_pressed("change_team_input")):
 			emit_signal("change_team_pressed")
@@ -144,44 +180,33 @@ func _on_area_entered(area: Area2D) -> void:
 		print("====GOT HIT====")
 		print(hp)
 		emit_signal("damage_report", id, area.shooter_id, shoot_damage)
-
 		
 func take_damage():
 	pass
 	
-func respawn(x, y):
-	#set_process(true)
-	self.hp = 100 # Não pode
-	is_alive = true # Não pode
-	
+func respawn():
 	animation.play("RESET")
-	collision_shape.disabled = false
-	box.show()
-	username_label.show()
-	username_label.text = str(id)
-	position.x = x
-	position.y = y
-	update_hp_visual()
-	
-func change_team():	
-	team_id = 1 if team_id == 0 else 0 # Não pode
-	team = "SKY" if team_id == 0 else "BLOOM" # Não pode
-	update_team_visual()
-	
-func sonic():
-	animation.play("sonic")
-	
-func kill():
 
+func kill():
 	is_dying = true
 	animation.play("death_anim")
 	
+
+func sonic():
+	animation.play("sonic")
+	
+func increase_size():
+	scale *= Vector2(1.5, 1.5)
+
+func reset_size():
+	scale = Vector2(1, 1)
 
 func update_is_alive_visual():
 	if(is_dying):
 		await animation.animation_finished
 		
 	if(self.is_alive):
+		reset_size()
 		collision_shape.disabled = false
 		box.show()
 		username_label.show()
@@ -206,13 +231,18 @@ func update_hp_visual():
 		hp_bar_style_box.bg_color = Color.RED
 		
 func update_team_visual():
+	print("TO AQUI MEU TIME É: ", team)
+	print("MEU NOME É ", self.id)
 	if(team == "SKY"):
 		#$username.add_theme_color_override("font_color", Color.AQUA)
+		print("MUDANDO DE SKY PARA BLOOM")
 		box.color = Color.from_rgba8(99, 255, 255, 255)
 		is_team_up = true
 	else: # BLOOM
 		#$username.add_theme_color_override("font_color", Color.DEEP_PINK)
+		print("MUDANDO DE BLOOM PARA SKY")
 		box.color = Color.from_rgba8(255, 102, 250, 255)
+		print("xxxx")
 		is_team_up = false
 
 func update_all_visuals():

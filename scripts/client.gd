@@ -5,13 +5,13 @@ signal other_player_connected(player_data: PlayerData)
 signal other_player_disconnected(other_player_id)
 signal player_moved(player_x, player_y)
 signal other_player_moved(other_player_x, other_player_y, other_player_id)
-signal player_shoot()
 signal player_damaged(damaged_id, player_damager_id, damage, player_hp)
 signal player_killed(killed_id, player_damaged_id, player_damager_id, damage, player_is_alive, player_hp)
 signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
-signal other_player_shoot(other_player_id)
+signal player_shoot(player_id)
 signal player_changed_team(player_changed_team_id)
 signal player_sonicked(player_sonicked_id)
+signal player_updated(player_data: PlayerData)
 
 @onready var chat_screen = $Control/VBoxContainer
 @onready var input_chat = $Control/VBoxContainer/Input
@@ -24,9 +24,9 @@ signal player_sonicked(player_sonicked_id)
 var websocket_url = "ws://127.0.0.1:9913"
 #var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
 #var websocket_url = "ws://127.0.0.1:8080"
-var game_title = "[color='yellow']PROTOTIP DIALGO[/color]\n"
-var version = "[color='yellow']Versão 0.0.0.36 Prototype - 25/06/2025 [/color]"
-var ping_on = false
+var game_title = "[color='yellow']PROTITP DIALGO[/color]\n"
+var version = "[color='yellow']Versão 0.0.0.38 Prototype - 25/06/2025 [/color]"
+var ping_paused = false
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
@@ -54,27 +54,26 @@ enum Network {
 	OTHER_PLAYER_DISCONNECTED = 102,
 	
 	PLAYER_MOVED = 103,
-	OTHER_PLAYER_MOVED = 104,
+	#OTHER_PLAYER_MOVED = 104,
 	
 	PLAYER_SHOOT = 105,
-	OTHER_PLAYER_SHOOT = 106,
-	PLAYER_DAMAGED = 107,
-	PLAYER_KILLED = 108,
-	PLAYER_RESPAWNED = 109,
-	PLAYER_CHANGED_TEAM = 110,
+	#OTHER_PLAYER_SHOOT = 106,
+	#PLAYER_DAMAGED = 107,
+	#PLAYER_KILLED = 108,
+	#PLAYER_RESPAWNED = 109,
+	#PLAYER_CHANGED_TEAM = 110,
 	PLAYER_SONICKED = 111,
 	
+	PLAYER_UPDATED = 112,
 	CHAT_RECEIVED = 200,
 	
 	PONG = 255
 }
 
-
-
 func _ready() -> void:
 	output_chat.text = game_title
 	output_chat.text += version+"\n"
-	ping_timer.autostart = ping_on
+	ping_timer.paused = ping_paused
 	chat_screen.hide()
 	socket.connect_to_url(websocket_url)
 
@@ -118,7 +117,7 @@ func _handle_state_change(state):
 			
 func _on_state_open():
 	print("OPEN!")
-	status_screen.text = "OPEN"
+	status_screen.text = "Open"
 	_request_connect()
 	
 func _wait_packets():
@@ -157,32 +156,35 @@ func receive_packet(packet):
 		Network.OTHER_PLAYER_DISCONNECTED:
 			_handle_other_player_disconnected(buffer)
 			
-		Network.PLAYER_MOVED:
-			_handle_player_moved(buffer)
+		#Network.PLAYER_MOVED:
+			#_handle_player_moved(buffer)
 			
-		Network.OTHER_PLAYER_MOVED:
-			_handle_other_player_moved(buffer)
+		#Network.OTHER_PLAYER_MOVED:
+		#	_handle_other_player_moved(buffer)
 			
 		Network.PLAYER_SHOOT:
 			_handle_player_shoot(buffer)
 			
-		Network.OTHER_PLAYER_SHOOT:
-			_handle_other_player_shoot(buffer)
+		#Network.OTHER_PLAYER_SHOOT:
+		#	_handle_other_player_shoot(buffer)
 			
-		Network.PLAYER_DAMAGED:
-			_handle_player_damaged(buffer)
+		#Network.PLAYER_DAMAGED:
+		#	_handle_player_damaged(buffer)
 			
-		Network.PLAYER_KILLED:
-			_handle_player_killed(buffer)
+		#Network.PLAYER_KILLED:
+		#	_handle_player_killed(buffer)
 			
-		Network.PLAYER_RESPAWNED:
-			_handle_player_respawned(buffer)
+		#Network.PLAYER_RESPAWNED:
+		#	_handle_player_respawned(buffer)
 			
-		Network.PLAYER_CHANGED_TEAM:
-			_handle_player_changed_team(buffer)
+		#Network.PLAYER_CHANGED_TEAM:
+		#	_handle_player_changed_team(buffer)
 			
 		Network.PLAYER_SONICKED:
 			_handle_player_sonicked(buffer)
+		
+		Network.PLAYER_UPDATED:
+			_handle_player_updated(buffer)
 			
 		Network.CHAT_RECEIVED:
 			_handle_chat_received(buffer)
@@ -204,7 +206,7 @@ func _request_connect():
 	buffer = MyBuffer.new()
 	buffer.write_u8(Network.REQUEST_CONNECT)
 	_send_packet(buffer)
-	
+
 func _request_player_move(move_x, move_y):
 	print("===REQUEST PLAYER MOVE===")
 	var buffer : MyBuffer
@@ -213,14 +215,14 @@ func _request_player_move(move_x, move_y):
 	buffer.write_u16(move_x)
 	buffer.write_u16(move_y)
 	_send_packet(buffer)
-	
+
 func _request_player_shoot():
 	print("===REQUEST PLAYER SHOOT===")
 	var buffer : MyBuffer
 	buffer = MyBuffer.new()
 	buffer.write_u8(Network.REQUEST_PLAYER_SHOOT)
 	_send_packet(buffer)
-	
+
 func _request_player_damage(player_damaged_id, player_damager_id, damage_value):
 	print("===REQUEST PLAYER DAMAGE===")
 	var buffer : MyBuffer
@@ -238,7 +240,7 @@ func _request_player_respawn(player_to_respawn_id):
 	buffer.write_u8(Network.REQUEST_PLAYER_RESPAWN)
 	buffer.write_u8(player_to_respawn_id)
 	_send_packet(buffer)
-	
+
 func _request_player_change_team():
 	print("===REQUEST PLAYER CHANGE TEAM===")
 	var buffer : MyBuffer
@@ -267,7 +269,6 @@ func _player_chat():
 	buffer.write_string(text)
 
 	_send_packet(buffer)
-	
 
 func _ping():
 	var timestamp_now = Time.get_ticks_msec()
@@ -277,9 +278,46 @@ func _ping():
 	buffer.write_u8(Network.PING)
 	buffer.write_u64(timestamp_now)
 	_send_packet(buffer)
-	
+
 
 # --- [ RESPOSTAS DO SERVIDOR ] --- #
+func _handle_player_updated(buffer):
+	print("===PLAYER UPDATED===")
+	
+	var player_data = PlayerData.new()
+	player_data.id = buffer.read_u8()
+	
+	var mask = buffer.read_u8()
+	print("MASK: ", mask)
+	
+	# ====         BITMASK         === #
+	var BIT_X            = 1 << 0 # 0000 0001
+	var BIT_Y            = 1 << 1 # 0000 0010
+	var BIT_IS_ALIVE     = 1 << 2 # 0000 0100
+	var BIT_HP           = 1 << 3 # 0000 1000
+	var BIT_TEAM_ID      = 1 << 4 # 0001 0000
+	var BIT_TEAM         = 1 << 5 # 0010 0000
+	var BIT_TOTAL_KILLS  = 1 << 6 # 0010 0000
+	
+	
+	if BIT_X & mask:
+		player_data.x = buffer.read_u16()
+	if BIT_Y & mask:
+		player_data.y = buffer.read_u16()
+	if BIT_IS_ALIVE & mask:
+		player_data.is_alive = buffer.read_u8()
+	if BIT_HP & mask:
+		player_data.hp = buffer.read_u8()
+	if BIT_TEAM_ID & mask:
+		player_data.team_id = buffer.read_u8()
+	if BIT_TEAM & mask:
+		player_data.team = buffer.read_string()
+	if BIT_TOTAL_KILLS & mask:
+		player_data.total_kills = buffer.read_u8()
+		
+	emit_signal("player_updated", player_data)
+		
+	
 
 func _handle_player_connected(buffer):
 	print("===PLAYER CONNECTED===")
@@ -319,13 +357,6 @@ func _handle_other_player_disconnected(buffer):
 	var other_player_id = buffer.read_u8()
 	emit_signal("other_player_disconnected", other_player_id)
 
-func _handle_player_moved(buffer):
-	print("===PLAYER MOVED===")
-	var move_x = buffer.read_u16()
-	var move_y = buffer.read_u16()
-	print("MOVED: ", move_x, " - ", move_y)
-	emit_signal("player_moved", move_x, move_y)
-
 func _handle_other_player_moved(buffer):
 	print("===OTHER PLAYER MOVED===")
 	var move_x = buffer.read_u16()
@@ -335,13 +366,16 @@ func _handle_other_player_moved(buffer):
 
 func _handle_player_shoot(buffer):
 	print("===PLAYER SHOOT===")
-	emit_signal("player_shoot")
+	var shooter_id = buffer.read_u8()
+	emit_signal("player_shoot", shooter_id)
 	
+'''		
 func _handle_other_player_shoot(buffer):
 	print("===OTHER PLAYER SHOOT===")
 	var other_player_id = buffer.read_u8()
 	emit_signal("other_player_shoot", other_player_id)
 	
+
 func _handle_player_damaged(buffer):
 	print("===PLAYER DAMAGED===")
 	var player_damaged_id = buffer.read_u8()
@@ -370,7 +404,8 @@ func _handle_player_changed_team(buffer):
 	print("===PLAYER CHANGED TEAM===")
 	var player_changed_team_id = buffer.read_u8()
 	emit_signal("player_changed_team", player_changed_team_id)
-	
+'''
+
 func _handle_player_sonicked(buffer):
 	print("===PLAYER SONICKED===")
 	var player_sonicked_id = buffer.read_u8()

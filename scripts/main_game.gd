@@ -73,15 +73,13 @@ func _on_client_player_moved(player_x: Variant, player_y: Variant) -> void:
 	players_connected[my_id].position.y = player_y
 
 
-
-
 func _on_client_other_player_moved(other_player_x: Variant, other_player_y: Variant, other_player_id: Variant) -> void:
 	players_connected[other_player_id].position.x = other_player_x
 	players_connected[other_player_id].position.y = other_player_y
 
 
-func _on_client_player_shoot() -> void:
-	players_connected[my_id].shoot()
+func _on_client_player_shoot(shooter_id: Variant) -> void:
+	players_connected[shooter_id].shoot()
 
 
 func _on_client_other_player_shoot(other_player_id: Variant) -> void:
@@ -103,7 +101,8 @@ func _on_client_player_killed(killed_id: Variant, damager_id: Variant, damage: V
 
 
 func _on_client_player_respawned(player_respawned_id: Variant, player_respawned_x: Variant, player_respawned_y: Variant) -> void:
-	players_connected[player_respawned_id].respawn(player_respawned_x, player_respawned_y)
+	#players_connected[player_respawned_id].respawn(player_respawned_x, player_respawned_y)
+	pass
 
 
 func _on_client_player_changed_team(player_changed_team_id: Variant) -> void:
@@ -112,3 +111,7 @@ func _on_client_player_changed_team(player_changed_team_id: Variant) -> void:
 
 func _on_client_player_sonicked(player_sonicked_id: Variant) -> void:
 	players_connected[player_sonicked_id].sonic()
+
+
+func _on_client_player_updated(player_data: PlayerData) -> void:
+	players_connected[player_data.id].setup(player_data)
