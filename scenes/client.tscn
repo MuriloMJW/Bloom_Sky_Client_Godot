@@ -42,11 +42,13 @@ theme_override_font_sizes/normal_font_size = 14
 bbcode_enabled = true
 text = "PROTITPO DE ALGO
 Versão Prototype 3.5
-"
+[8] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
 scroll_following = true
+autowrap_mode = 1
 
 [node name="Input" type="LineEdit" parent="Control/VBoxContainer"]
 layout_mode = 2
+max_length = 300
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="Control"]
 layout_mode = 1

@@ -67,6 +67,7 @@ enum Network {
 	PLAYER_SONICKED = 111,
 	
 	PLAYER_UPDATED = 112,
+	PLAYER_SETUP = 113,
 	
 	RANKING_UPDATED = 199,
 	CHAT_RECEIVED = 200,
@@ -331,27 +332,34 @@ func _handle_player_updated(buffer):
 
 func _handle_player_connected(buffer):
 	print("===PLAYER CONNECTED===")
-	status_screen.text = "Conectado"
-	chat_screen.show()
-	ranking_screen.show()
-	output_container.show()
 	
+	var is_my_player = buffer.read_u8()
+
 	var player_data = PlayerData.new()
 	player_data.id = buffer.read_u8()
 	player_data.x = buffer.read_u16()
 	player_data.y = buffer.read_u16()
-	player_data.team_id = buffer.read_u8()
-	player_data.team = buffer.read_string()
 	player_data.is_alive = buffer.read_u8()
 	player_data.hp = buffer.read_u8()
+	player_data.team_id = buffer.read_u8()
+	player_data.team = buffer.read_string()
+	player_data.total_kills = buffer.read_u16()
 	
-	my_id = player_data.id
 	
-	emit_signal("player_connected", player_data)
-	
+	if(is_my_player == Network.PLAYER_CONNECTED):
+		print("===ME CONNECTED===")
+		status_screen.text = "Conectado"
+		chat_screen.show()
+		ranking_screen.show()
+		output_container.show()
+		my_id = player_data.id
+		emit_signal("player_connected", player_data)
+	else:
+		print("===OTHER PLAYER CONNECTED===")
+		emit_signal("other_player_connected", player_data)
 
 func _handle_other_player_connected(buffer):
-	print("===OTHER PLAYER CONNECTED===")
+	print("===OTAAAAAAAAAAAHER PLAYER CONNECTED===")
 	
 	var other_player_data = PlayerData.new()
 	other_player_data.id = buffer.read_u8()
