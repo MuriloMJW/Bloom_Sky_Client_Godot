@@ -32,7 +32,6 @@ var hp : int: set = set_hp
 
 var total_kills: int: set = set_total_kills
 
-var is_sonic_mode: bool: set = set_is_sonic_mode
 
 var shoot_damage := 20
 
@@ -68,6 +67,7 @@ func set_is_alive(value):
 		else:
 			self.respawn()
 		update_all_visuals()
+		
 
 func set_hp(value):
 	hp = value
@@ -78,14 +78,6 @@ func set_hp(value):
 func set_total_kills(value):
 	total_kills = value
 	increase_size()
-
-func set_is_sonic_mode(value):
-	if(self.is_sonic_mode == value):
-		return
-		
-	is_sonic_mode = value
-	if(is_node_ready()):
-		sonic()
 
 
 func setup(player_data):
@@ -106,8 +98,8 @@ func setup(player_data):
 		self.hp = player_data.hp
 	if player_data.total_kills != null:
 		self.total_kills = player_data.total_kills
-	if player_data.is_sonic_mode != null:
-		self.is_sonic_mode = player_data.is_sonic_mode
+	
+	# self.is_sonicking = false
 
 # Fazer uns getters e setter, por ex, set_is_alive,
 # se falso, can_move = false, etc
@@ -144,7 +136,7 @@ func _process(delta):
 			emit_signal("shoot_pressed", id)
 	
 		if(Input.is_action_just_pressed("die_input")):
-			emit_signal("damage_report", id, 123, 10)
+			emit_signal("damage_report", id, id, 10)
 		
 		if(Input.is_action_just_pressed("change_team_input")):
 			emit_signal("change_team_pressed")
@@ -201,15 +193,10 @@ func kill():
 	
 
 func sonic():
-	if(is_sonic_mode):
-		#animation.play("sonic")
-		pass
-	else:
-		animation.play("RESET")
-		animation.stop()
+	animation.play("sonic")
 	
 func increase_size():
-	scale *= Vector2(1.5, 1.5)
+	scale *= Vector2(1.3, 1.3)
 
 func reset_size():
 	scale = Vector2(1, 1)
@@ -244,21 +231,21 @@ func update_hp_visual():
 		hp_bar_style_box.bg_color = Color.RED
 		
 func update_team_visual():
+	print("TO AQUI MEU TIME É: ", team)
+	print("MEU NOME É ", self.id)
 	if(team == "SKY"):
 		#$username.add_theme_color_override("font_color", Color.AQUA)
+		print("MUDANDO DE SKY PARA BLOOM")
 		box.color = Color.from_rgba8(99, 255, 255, 255)
 		is_team_up = true
 	else: # BLOOM
 		#$username.add_theme_color_override("font_color", Color.DEEP_PINK)
+		print("MUDANDO DE BLOOM PARA SKY")
 		box.color = Color.from_rgba8(255, 102, 250, 255)
+		print("xxxx")
 		is_team_up = false
 
-func update_is_sonic_mode_visual():
-	sonic()
-	
-
 func update_all_visuals():
-	update_is_sonic_mode_visual()
 	update_hp_visual()
 	update_team_visual()
 	update_is_alive_visual()

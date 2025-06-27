@@ -11,4 +11,3 @@ class_name PlayerData
 @export var hp = null
 @export var is_my_player = null
 @export var total_kills = null
-@export var is_sonic_mode = null

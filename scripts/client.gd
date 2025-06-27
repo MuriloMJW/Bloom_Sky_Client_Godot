@@ -10,7 +10,7 @@ signal player_killed(killed_id, player_damaged_id, player_damager_id, damage, pl
 signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
 signal player_shoot(player_id)
 signal player_changed_team(player_changed_team_id)
-#signal player_sonicked(player_sonicked_id)
+signal player_sonicked(player_sonicked_id)
 signal player_updated(player_data: PlayerData)
 
 @onready var chat_screen = $Control/VBoxContainer
@@ -18,15 +18,17 @@ signal player_updated(player_data: PlayerData)
 @onready var output_chat = $Control/VBoxContainer/OutputContainer/MarginContainer/Output
 @onready var status_screen = $Control/PanelContainer/Status
 @onready var ping_screen = $Control/PanelContainer2/Ping
+@onready var ranking_screen = $Control/VBoxContainer2/OutputContainer/MarginContainer/RankingOutput
 @onready var ping_timer: Timer = $PingTimer
+@onready var output_container = $Control/VBoxContainer2/OutputContainer
 
 
 var websocket_url = "ws://127.0.0.1:9913"
 #var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
 #var websocket_url = "ws://127.0.0.1:8080"
 var game_title = "[color='yellow']PROTITP DIALGO[/color]\n"
-var version = "[color='yellow']Versão 0.0.0.38 Prototype - 25/06/2025 [/color]"
-var ping_paused = false
+var version = "[color='yellow']Versão 0.0.0.40 Prototype - 26/06/2025 [/color]"
+var ping_paused = true
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
@@ -62,9 +64,11 @@ enum Network {
 	#PLAYER_KILLED = 108,
 	#PLAYER_RESPAWNED = 109,
 	#PLAYER_CHANGED_TEAM = 110,
-	#PLAYER_SONICKED = 111,
+	PLAYER_SONICKED = 111,
 	
 	PLAYER_UPDATED = 112,
+	
+	RANKING_UPDATED = 199,
 	CHAT_RECEIVED = 200,
 	
 	PONG = 255
@@ -75,7 +79,10 @@ func _ready() -> void:
 	output_chat.text += version+"\n"
 	ping_timer.paused = ping_paused
 	chat_screen.hide()
+	ranking_screen.hide()
+	output_container.hide()
 	socket.connect_to_url(websocket_url)
+	ranking_screen.text = ''
 
 func _process(delta: float) -> void:
 	# Envia e recebe frames inicias de abertura (HTTP -> Websocket)
@@ -180,11 +187,14 @@ func receive_packet(packet):
 		#Network.PLAYER_CHANGED_TEAM:
 		#	_handle_player_changed_team(buffer)
 			
-		#Network.PLAYER_SONICKED:
-		#	_handle_player_sonicked(buffer)
+		Network.PLAYER_SONICKED:
+			_handle_player_sonicked(buffer)
 		
 		Network.PLAYER_UPDATED:
 			_handle_player_updated(buffer)
+			
+		Network.RANKING_UPDATED:
+			_handle_ranking_updated(buffer)
 			
 		Network.CHAT_RECEIVED:
 			_handle_chat_received(buffer)
@@ -291,14 +301,13 @@ func _handle_player_updated(buffer):
 	print("MASK: ", mask)
 	
 	# ====         BITMASK         === #
-	var BIT_X             = 1 << 0 # 0000 0001
-	var BIT_Y             = 1 << 1 # 0000 0010
-	var BIT_IS_ALIVE      = 1 << 2 # 0000 0100
-	var BIT_HP            = 1 << 3 # 0000 1000
-	var BIT_TEAM_ID       = 1 << 4 # 0001 0000
-	var BIT_TEAM          = 1 << 5 # 0010 0000
-	var BIT_TOTAL_KILLS   = 1 << 6 # 0100 0000
-	var BIT_IS_SONIC_MODE = 1 << 7 # 1000 0000
+	var BIT_X            = 1 << 0 # 0000 0001
+	var BIT_Y            = 1 << 1 # 0000 0010
+	var BIT_IS_ALIVE     = 1 << 2 # 0000 0100
+	var BIT_HP           = 1 << 3 # 0000 1000
+	var BIT_TEAM_ID      = 1 << 4 # 0001 0000
+	var BIT_TEAM         = 1 << 5 # 0010 0000
+	var BIT_TOTAL_KILLS  = 1 << 6 # 0010 0000
 	
 	
 	if BIT_X & mask:
@@ -314,9 +323,7 @@ func _handle_player_updated(buffer):
 	if BIT_TEAM & mask:
 		player_data.team = buffer.read_string()
 	if BIT_TOTAL_KILLS & mask:
-		player_data.total_kills = buffer.read_u8()
-	if BIT_IS_SONIC_MODE & mask:
-		player_data.is_sonic_mode = buffer.read_u8()
+		player_data.total_kills = buffer.read_u16()
 		
 	emit_signal("player_updated", player_data)
 		
@@ -326,6 +333,8 @@ func _handle_player_connected(buffer):
 	print("===PLAYER CONNECTED===")
 	status_screen.text = "Conectado"
 	chat_screen.show()
+	ranking_screen.show()
+	output_container.show()
 	
 	var player_data = PlayerData.new()
 	player_data.id = buffer.read_u8()
@@ -335,7 +344,6 @@ func _handle_player_connected(buffer):
 	player_data.team = buffer.read_string()
 	player_data.is_alive = buffer.read_u8()
 	player_data.hp = buffer.read_u8()
-	player_data.is_sonic_mode = buffer.read_u8()
 	
 	my_id = player_data.id
 	
@@ -353,7 +361,6 @@ func _handle_other_player_connected(buffer):
 	other_player_data.team = buffer.read_string()
 	other_player_data.is_alive = buffer.read_u8()
 	other_player_data.hp = buffer.read_u8()
-	other_player_data.is_sonic_mode = buffer.read_u8()
 	
 	emit_signal("other_player_connected", other_player_data)
 
@@ -414,8 +421,12 @@ func _handle_player_changed_team(buffer):
 func _handle_player_sonicked(buffer):
 	print("===PLAYER SONICKED===")
 	var player_sonicked_id = buffer.read_u8()
-	#emit_signal("player_sonicked", player_sonicked_id)
+	emit_signal("player_sonicked", player_sonicked_id)
 	
+func _handle_ranking_updated(buffer):
+	var ranking_text_received = buffer.read_string()
+	ranking_screen.text = ranking_text_received
+
 
 func _handle_chat_received(buffer):
 	
