@@ -73,7 +73,7 @@ func read_string() -> String:
 	
 	var string_bytes = PackedByteArray()
 	string_bytes = data_array.slice(pos, end_pos)
-	var text_decoded = string_bytes.get_string_from_ascii()
+	var text_decoded = string_bytes.get_string_from_utf8()
 	
 	# Avança a posição para depois do que foi lido (+1 para pular o byte nulo)
 	pos = end_pos + 1
@@ -108,7 +108,7 @@ func write_u64(data: int):
 	data_array.append_array(bytes)
 
 func write_string(data: String):
-	data_array.append_array(data.to_ascii_buffer())
+	data_array.append_array(data.to_utf8_buffer())
 	data_array.push_back(0)
 
 

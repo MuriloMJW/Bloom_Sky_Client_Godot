@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://bfwnxi4mcvuso"]
+[gd_scene load_steps=4 format=3 uid="uid://bfwnxi4mcvuso"]
 
 [ext_resource type="Script" uid="uid://cd074q8qfq5e3" path="res://scripts/client.gd" id="1_lgb4g"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5f806"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1t5vp"]
 
 [node name="Client" type="Node"]
 script = ExtResource("1_lgb4g")
@@ -20,8 +24,9 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 3.0
-offset_top = -200.0
+offset_top = -205.0
 offset_right = -214.0
+offset_bottom = -5.0
 grow_horizontal = 2
 grow_vertical = 0
 
@@ -39,18 +44,23 @@ theme_override_constants/margin_right = 5
 [node name="Output" type="RichTextLabel" parent="Control/VBoxContainer/OutputContainer/MarginContainer"]
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 14
+theme_override_styles/focus = SubResource("StyleBoxEmpty_5f806")
 bbcode_enabled = true
 text = "PROTITPO DE ALGO
 Versão Prototype 3.5
 [8] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
 scroll_following = true
 autowrap_mode = 1
+selection_enabled = true
 
 [node name="Input" type="LineEdit" parent="Control/VBoxContainer"]
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_1t5vp")
 max_length = 300
+deselect_on_focus_loss_enabled = false
+caret_blink = true
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="Control"]
+[node name="RankingVBoxContainer" type="VBoxContainer" parent="Control"]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -58,16 +68,17 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -210.0
-offset_top = -200.0
+offset_top = -205.0
 offset_right = -3.0
+offset_bottom = -5.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="OutputContainer" type="PanelContainer" parent="Control/VBoxContainer2"]
+[node name="RankingContainer" type="PanelContainer" parent="Control/RankingVBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="Control/VBoxContainer2/OutputContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="Control/RankingVBoxContainer/RankingContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 10
@@ -75,7 +86,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 5
 
-[node name="RankingOutput" type="RichTextLabel" parent="Control/VBoxContainer2/OutputContainer/MarginContainer"]
+[node name="RankingOutput" type="RichTextLabel" parent="Control/RankingVBoxContainer/RankingContainer/MarginContainer"]
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 14
 bbcode_enabled = true

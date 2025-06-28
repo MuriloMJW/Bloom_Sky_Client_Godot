@@ -6,6 +6,7 @@ signal damage_report(damaged_id, damager_id, damage_value)
 signal respawn_pressed(id)
 signal change_team_pressed()
 signal sonic_pressed()
+signal enter_pressed()
 
 @onready var username_label = $username
 @onready var hp_bar = $ProgressBar
@@ -124,6 +125,7 @@ func _process(delta):
 	#position = player_position
 	#print(player_position)
 	
+	# Se é meu jogador e se está vivo
 	if(is_my_player and is_alive):
 		if(Input.is_action_just_pressed("shoot")):
 			
@@ -144,6 +146,7 @@ func _process(delta):
 		if(Input.is_action_just_pressed("sonic_input")):
 			emit_signal("sonic_pressed")
 						
+	# Se é meu jogador e está morto e apertou respawn
 	if(is_my_player and !is_alive and Input.is_action_just_pressed("respawn_input")):
 		#respawn(position.x, position.y)
 		emit_signal("respawn_pressed", id)
@@ -231,18 +234,13 @@ func update_hp_visual():
 		hp_bar_style_box.bg_color = Color.RED
 		
 func update_team_visual():
-	print("TO AQUI MEU TIME É: ", team)
-	print("MEU NOME É ", self.id)
 	if(team == "SKY"):
 		#$username.add_theme_color_override("font_color", Color.AQUA)
-		print("MUDANDO DE SKY PARA BLOOM")
 		box.color = Color.from_rgba8(99, 255, 255, 255)
 		is_team_up = true
 	else: # BLOOM
 		#$username.add_theme_color_override("font_color", Color.DEEP_PINK)
-		print("MUDANDO DE BLOOM PARA SKY")
 		box.color = Color.from_rgba8(255, 102, 250, 255)
-		print("xxxx")
 		is_team_up = false
 
 func update_all_visuals():
