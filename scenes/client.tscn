@@ -43,6 +43,7 @@ theme_override_constants/margin_right = 5
 
 [node name="Output" type="RichTextLabel" parent="Control/VBoxContainer/OutputContainer/MarginContainer"]
 layout_mode = 2
+focus_mode = 2
 theme_override_font_sizes/normal_font_size = 14
 theme_override_styles/focus = SubResource("StyleBoxEmpty_5f806")
 bbcode_enabled = true

@@ -23,3 +23,16 @@ extends Node
 		player_data.team = buffer.read_string()
 	if BIT_TOTAL_KILLS & mask:
 		player_data.total_kills = buffer.read_u16()
+
+
+Movimento do player no mouse
+
+	'''
+		if(Input.is_action_just_pressed("mouse_click")):
+			var mouse_position = get_global_mouse_position()
+			var x = mouse_position.x
+			var y = mouse_position.y
+			#position = mouse_position
+			
+			emit_signal("move_pressed", x, y)
+		'''

@@ -152,10 +152,9 @@ func _ready():
 func _physics_process(delta):
 	tick_count += 1
 	# Se é meu jogador e se está vivo
-	if(is_my_player and is_alive):
+	if(is_my_player and is_alive):	
 		# === MOVIMENTO == #
 		handle_movement_input(delta)
-		#handle_movement_input_game_loop_mode(delta)
 	
 		# === TIRO === #
 		if(Input.is_action_pressed("shoot")):
@@ -181,26 +180,13 @@ func _physics_process(delta):
 	
 func handle_movement_input(delta):
 	var movement = (Input.get_vector("move_left", "move_right", "move_forward", "move_backward"))
-	
-	if movement != Vector2.ZERO:
-		position += movement * speed * delta
-		emit_signal("move_pressed", movement.x, movement.y)
-	
-	authoritative_cube.position.x = authoritative_position.x
-	authoritative_cube.position.y = authoritative_position.y
-	
-	if position.distance_to(authoritative_position) > 0.001:
-		position = position.lerp(authoritative_position, 1)
-	
-func handle_movement_input_game_loop_mode(delta):
-	var movement = (Input.get_vector("move_left", "move_right", "move_forward", "move_backward"))
 	# Se apertar pra esquerda    o movement recebe (-1, 0)
 	# Se apertar para cima       o movement recebe (0, -1)
 	# Se apertar esquerda e cima o movement recebe (-0.75, -0.75)
 	
 	#print("AUTH POS: ", authoritative_position)
 	#print("MY POS: ", position)
-	#authoritative_cube.hide()
+	authoritative_cube.hide()
 	#position += movement * speed * delta
 	if(last_sent_movement != movement):
 	
@@ -213,7 +199,6 @@ func handle_movement_input_game_loop_mode(delta):
 	#if(movement != Vector2.ZERO):
 	position += movement * speed * delta
 	authoritative_cube.position.x = authoritative_position.x
-	authoritative_cube.position.y = authoritative_position.y
 	#print("XX Player: x: ", position.x, "y: ", position.y)
 	if position.distance_to(authoritative_position) > 0.01:
 		position = position.lerp(authoritative_position, 1)
@@ -355,5 +340,5 @@ func _on_player_body_area_entered(area: Area2D) -> void:
 
 func _on_timer_timeout() -> void:
 	pass # Replace with function body.
-	#print("------ GODOT UPDATES POR SEGUNDO: ", tick_count)
+	print("------ GODOT UPDATES POR SEGUNDO: ", tick_count)
 	tick_count = 0

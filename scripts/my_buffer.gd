@@ -4,8 +4,10 @@ extends RefCounted
 
 var BUFFER_U8 = 1
 var BUFFER_U16 = 2
+var BUFFER_S16 = 2
 var BUFFER_U32 = 4
 var BUFFER_U64 = 8
+var BUFFER_FLOAT = 4
 
 var data_array: PackedByteArray
 var pos: int = 0
@@ -35,9 +37,18 @@ func read_u16() -> int:
 		printerr("MyBuffer: Tentativa de ler u16 fora dos limites do buffer.")
 		return 0
 		
-	# CORREÇÃO: O método correto é decode_u16.
-	var value = data_array.decode_u16(pos)
+	
+	var value = data_array.decode_s16(pos)
 	pos += BUFFER_U16
+	return value
+	
+func read_s16() -> int:
+	if pos + 2 > data_array.size():
+		printerr("MyBuffer: Tentativa de ler u16 fora dos limites do buffer.")
+		return 0
+		
+	var value = data_array.decode_s16(pos)
+	pos += BUFFER_S16
 	return value
 
 
@@ -57,11 +68,18 @@ func read_u64() -> int:
 		printerr("MyBuffer: Tentativa de ler u64 fora dos limites do buffer.")
 		return 0
 		
-	# CORREÇÃO: O método correto é decode_u64.
 	var value = data_array.decode_u64(pos)
 	pos += BUFFER_U64
 	return value
 
+func read_float() -> float:
+	if pos+4 > data_array.size():
+		printerr("MyBuffer: Tentativa de ler float fora dos limites do buffer")
+		return 0
+	
+	var value = data_array.decode_float(pos)
+	pos += BUFFER_FLOAT
+	return value
 
 func read_string() -> String:
 	var end_pos = data_array.find(0, pos)
@@ -95,6 +113,13 @@ func write_u16(data: int):
 	bytes.encode_u16(0, data)
 	data_array.append_array(bytes)
 
+func write_s16(data: int):
+	# Esta forma de usar um array temporário e encode_* está correta.
+	var bytes = PackedByteArray()
+	bytes.resize(2) # Garante que o array tenha espaço
+	bytes.encode_s16(0, data)
+	data_array.append_array(bytes)
+
 func write_u32(data: int):
 	var bytes = PackedByteArray()
 	bytes.resize(4)
@@ -106,6 +131,13 @@ func write_u64(data: int):
 	bytes.resize(8)
 	bytes.encode_u64(0, data)
 	data_array.append_array(bytes)
+
+func write_float(data :float):
+	var bytes = PackedByteArray()
+	bytes.resize(4)
+	bytes.encode_float(0, data)
+	data_array.append_array(bytes)
+	
 
 func write_string(data: String):
 	data_array.append_array(data.to_utf8_buffer())
