@@ -17,6 +17,7 @@ signal enter_pressed()
 @onready var animation = $AnimationPlayer
 @onready var shoot_cooldown_timer = $ShootCooldownTimer
 @onready var timer = $Timer
+var tick_count = 0
 
 var bullet_scene = load("res://scenes/bullet.tscn")
 var authoritative_cube_scene = load("res://scenes/authoritative_cube.tscn")
@@ -42,11 +43,18 @@ var shoot_cooldown: float: set = set_shoot_cooldown
 var shoot_damage := 20
 
 
-# --- Variáveis de Animação
+# --- Variáveis de Animação --- $
 var is_dying: bool = false
 
+# --- Variaveis de predição de movimento --- #
 var authoritative_position = position
 var last_sent_movement = Vector2.ZERO
+
+var correction_speed := 500
+var tolerance := 1.0
+var snapshot_buffer := []
+var max_buffer_time := 1.0
+
 
 #================= SETTERS =============== #
 
@@ -149,6 +157,18 @@ func _ready():
 
 
 func _physics_process(delta):
+	
+	var now = Time.get_ticks_msec() / 1000.0
+	snapshot_buffer.append({"time": now, "pos": authoritative_position})
+	
+	while snapshot_buffer.size() > 0 and now - snapshot_buffer[0].time > max_buffer_time:
+		snapshot_buffer.pop_front()
+		
+	var ping = 0.150
+	var render_time = now - ping*0.5
+	position = interpolate_snapshot(render_time)
+	
+	tick_count += 1
 	# Se é meu jogador e se está vivo
 	if(is_my_player and is_alive):
 		# === MOVIMENTO == #
@@ -176,20 +196,76 @@ func _physics_process(delta):
 		#respawn(position.x, position.y)
 		emit_signal("respawn_pressed", id)
 
-	
+
+var idle_time := 0.0
+var lerp_delay := 0.170
+
+var rtt := 150
+var buffer_delay := (rtt / 1000.0)
+
+func interpolate_snapshot(target_time: float) -> Vector2:
+	if snapshot_buffer.size() < 2:
+		return authoritative_position
+	# encontra o intervalo no buffer
+	for i in range(snapshot_buffer.size() - 1):
+		var a = snapshot_buffer[i]
+		var b = snapshot_buffer[i + 1]
+		if a.time <= target_time and target_time <= b.time:
+			var t = (target_time - a.time) / (b.time - a.time)
+			return a.pos.lerp(b.pos, t)
+	return snapshot_buffer.back().pos
+
 func handle_movement_input(delta):
 	var movement = (Input.get_vector("move_left", "move_right", "move_forward", "move_backward"))
 	
+	#authoritative_cube.position.x = authoritative_position.x
+	#authoritative_cube.position.y = authoritative_position.y
+	
+	#print(idle_time)
+	
 	if movement != Vector2.ZERO:
+		idle_time = 0
+		position += movement * speed * delta
 		emit_signal("move_pressed", movement.x, movement.y)
-		#position += movement * (speed-speed) * delta
+	
+	var dist = position.distance_to(authoritative_position)
+	if dist > tolerance:
+		var ping = 0.150
+		var strength = clamp(delta / max(ping, 0.01), 0.0, 1.0)
+		position = position.move_toward(authoritative_position, correction_speed * delta)
+	
+	
+	
+		#if position.distance_to(authoritative_position) > 0.1:
+		#	position = position.lerp(authoritative_position, 0.1)
+	
+func handle_movement_input_game_loop_mode(delta):
+	var movement = (Input.get_vector("move_left", "move_right", "move_forward", "move_backward"))
+	# Se apertar pra esquerda    o movement recebe (-1, 0)
+	# Se apertar para cima       o movement recebe (0, -1)
+	# Se apertar esquerda e cima o movement recebe (-0.75, -0.75)
+	
+	#print("AUTH POS: ", authoritative_position)
+	#print("MY POS: ", position)
+	#authoritative_cube.hide()
+	#position += movement * speed * delta
+	if(last_sent_movement != movement):
+	
+		#position += movement * speed * 1.0/30.0
+		emit_signal("move_pressed", movement.x, movement.y)
+		last_sent_movement = movement
+	#print(speed)
+	#position.x = authoritative_position.x
+	#position.y = authoritative_position.y
+	#if(movement != Vector2.ZERO):
+	position += movement * speed * delta
 	authoritative_cube.position.x = authoritative_position.x
 	authoritative_cube.position.y = authoritative_position.y
-	
-	if position.distance_to(authoritative_position) > 1:
-		position = position.lerp(authoritative_position, 0.5)
-	
-		
+	#print("XX Player: x: ", position.x, "y: ", position.y)
+	if position.distance_to(authoritative_position) > 0.01:
+		position = position.lerp(authoritative_position, 1)
+		#pass
+			
 func handle_other_player_moved(delta):
 	position = authoritative_position
 
@@ -224,10 +300,11 @@ func shoot():
 	
 	
 	#if shoot_cooldown_timer.is_stopped():
-	
+		
 	var bullet = bullet_scene.instantiate()
 	bullet.position = self.position
 	bullet.rotation = player_body.rotation
+	bullet.is_moving_up = self.team_id == 0
 	bullet.shooter_id = id
 	get_parent().add_child(bullet)
 	get_parent().add_child(authoritative_cube)
@@ -239,11 +316,7 @@ func take_damage():
 	pass
 	
 func respawn():
-	# TODO: Fazer isso no código,
-	# ao invés de animação de reset
 	animation.play("RESET")
-	await animation.animation_finished
-	update_all_visuals()
 
 func kill():
 	is_dying = true
@@ -293,7 +366,6 @@ func update_team_visual():
 		#$username.add_theme_color_override("font_color", Color.AQUA)
 		box.color = Color.from_rgba8(99, 255, 255, 255)
 		team_id = 0
-		print("FUI CHAMADO ROTATION")
 		player_body.set_rotation_degrees(180)
 	else: # BLOOM
 		#$username.add_theme_color_override("font_color", Color.DEEP_PINK)
@@ -324,4 +396,11 @@ func show_info():
 func _on_player_body_area_entered(area: Area2D) -> void:
 	if(is_my_player and area.is_in_group("bullet") and area.shooter_id != id and self.hp > 0):
 		print("====GOT HIT====")
+		print(hp)
 		emit_signal("damage_report", id, area.shooter_id, shoot_damage)
+
+
+func _on_timer_timeout() -> void:
+	pass # Replace with function body.
+	#print("------ GODOT UPDATES POR SEGUNDO: ", tick_count)
+	tick_count = 0

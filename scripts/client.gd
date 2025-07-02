@@ -24,10 +24,10 @@ signal player_updated(player_data: PlayerData)
 
 
 #var websocket_url = "ws://127.0.0.1:9913"
-#var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
-var websocket_url = "ws://127.0.0.1:8080"
+var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
+#var websocket_url = "ws://127.0.0.1:8080"
 var game_title = "[color='yellow']PROTITP DIALGO[/color]\n"
-var version = "[color='yellow']Versão 0.0.0.44 Prototype - 28/06/2025 [/color]"
+var version = "[color='yellow']Versão 0.0.0.45 Prototype - 01/07/2025 [/color]"
 var ping_paused = true
 
 var socket := WebSocketPeer.new()

@@ -36,3 +36,27 @@ Movimento do player no mouse
 			
 			emit_signal("move_pressed", x, y)
 		'''
+		
+		
+func handle_movement_input_game_loop_mode(delta):
+	var movement = (Input.get_vector("move_left", "move_right", "move_forward", "move_backward"))
+	# Se apertar pra esquerda    o movement recebe (-1, 0)
+	# Se apertar para cima       o movement recebe (0, -1)
+	# Se apertar esquerda e cima o movement recebe (-0.75, -0.75)
+	
+	#print("AUTH POS: ", authoritative_position)
+	#print("MY POS: ", position)
+	#authoritative_cube.hide()
+	if(last_sent_movement != movement):
+		#position += movement * speed * 1.0/30.0
+		emit_signal("move_pressed", movement.x, movement.y)
+		last_sent_movement = movement
+
+	#if(movement != Vector2.ZERO):
+	position += movement * speed * delta
+	authoritative_cube.position.x = authoritative_position.x
+	authoritative_cube.position.y = authoritative_position.y
+	
+	if position.distance_to(authoritative_position) > 0.01:
+		position = position.lerp(authoritative_position, 1)
+	
