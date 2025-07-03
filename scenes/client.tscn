@@ -17,7 +17,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+[node name="ChatVBoxContainer" type="VBoxContainer" parent="Control"]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -30,18 +30,18 @@ offset_bottom = -5.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="OutputContainer" type="PanelContainer" parent="Control/VBoxContainer"]
+[node name="OutputContainer" type="PanelContainer" parent="Control/ChatVBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="Control/VBoxContainer/OutputContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="Control/ChatVBoxContainer/OutputContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 
-[node name="Output" type="RichTextLabel" parent="Control/VBoxContainer/OutputContainer/MarginContainer"]
+[node name="Output" type="RichTextLabel" parent="Control/ChatVBoxContainer/OutputContainer/MarginContainer"]
 layout_mode = 2
 focus_mode = 2
 theme_override_font_sizes/normal_font_size = 14
@@ -54,7 +54,7 @@ scroll_following = true
 autowrap_mode = 1
 selection_enabled = true
 
-[node name="Input" type="LineEdit" parent="Control/VBoxContainer"]
+[node name="Input" type="LineEdit" parent="Control/ChatVBoxContainer"]
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_1t5vp")
 max_length = 300
@@ -101,12 +101,12 @@ text = "======= RANKING =======
 scroll_following = true
 horizontal_alignment = 3
 
-[node name="PanelContainer" type="PanelContainer" parent="Control"]
+[node name="StatusContainer" type="PanelContainer" parent="Control"]
 layout_mode = 1
 offset_right = 159.0
 offset_bottom = 40.0
 
-[node name="Status" type="RichTextLabel" parent="Control/PanelContainer"]
+[node name="Status" type="RichTextLabel" parent="Control/StatusContainer"]
 layout_mode = 2
 bbcode_enabled = true
 text = "Offline"
@@ -114,7 +114,7 @@ scroll_following = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PanelContainer2" type="PanelContainer" parent="Control"]
+[node name="PingContainer" type="PanelContainer" parent="Control"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -123,7 +123,7 @@ offset_left = -90.0
 offset_bottom = 40.0
 grow_horizontal = 0
 
-[node name="Ping" type="RichTextLabel" parent="Control/PanelContainer2"]
+[node name="Ping" type="RichTextLabel" parent="Control/PingContainer"]
 layout_mode = 2
 bbcode_enabled = true
 text = "0000ms"
@@ -131,9 +131,28 @@ scroll_following = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="FpsContainer" type="PanelContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -184.0
+offset_right = -94.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="Fps" type="RichTextLabel" parent="Control/FpsContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "FPS: 60"
+scroll_following = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="PingTimer" type="Timer" parent="."]
+wait_time = 0.1
 autostart = true
 ignore_time_scale = true
 
-[connection signal="text_submitted" from="Control/VBoxContainer/Input" to="." method="_on_input_text_submitted"]
+[connection signal="text_submitted" from="Control/ChatVBoxContainer/Input" to="." method="_on_input_text_submitted"]
 [connection signal="timeout" from="PingTimer" to="." method="_on_ping_timer_timeout"]

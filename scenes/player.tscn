@@ -173,6 +173,7 @@ libraries = {
 }
 
 [node name="ShootCooldownTimer" type="Timer" parent="."]
+wait_time = 2.0
 one_shot = true
 
 [node name="Timer" type="Timer" parent="."]

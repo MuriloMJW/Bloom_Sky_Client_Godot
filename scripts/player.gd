@@ -179,6 +179,10 @@ func _physics_process(delta):
 	
 func handle_movement_input(delta):
 	var movement = (Input.get_vector("move_left", "move_right", "move_forward", "move_backward"))
+	# Se apertar pra esquerda    o movement recebe (-1, 0)
+	# Se apertar para cima       o movement recebe (0, -1)
+	# Se apertar esquerda e cima o movement recebe (-0.75, -0.75)
+	
 	
 	if movement != Vector2.ZERO:
 		emit_signal("move_pressed", movement.x, movement.y)
@@ -187,7 +191,7 @@ func handle_movement_input(delta):
 	authoritative_cube.position.y = authoritative_position.y
 	
 	if position.distance_to(authoritative_position) > 1:
-		position = position.lerp(authoritative_position, 0.5)
+		position = position.lerp(authoritative_position, 0.36)
 	
 		
 func handle_other_player_moved(delta):
@@ -196,8 +200,9 @@ func handle_other_player_moved(delta):
 
 func handle_shoot_input():
 	
-	#fire_cooldown_timer.start(fire_cooldown)
-	#and fire_cooldown_timer.is_stopped()
+	if shoot_cooldown_timer.is_stopped():
+		emit_signal("shoot_pressed", id)
+		shoot_cooldown_timer.start(shoot_cooldown)
 	'''
 	var bullet = bullet_scene.instantiate()
 	bullet.position = self.position
@@ -206,7 +211,7 @@ func handle_shoot_input():
 	bullet.shooter_id = id
 	get_parent().add_child(bullet)
 	'''
-	emit_signal("shoot_pressed", id)
+	
 	
 	'''
 	if(is_alive):
@@ -324,4 +329,4 @@ func show_info():
 func _on_player_body_area_entered(area: Area2D) -> void:
 	if(is_my_player and area.is_in_group("bullet") and area.shooter_id != id and self.hp > 0):
 		print("====GOT HIT====")
-		emit_signal("damage_report", id, area.shooter_id, shoot_damage)
+		#emit_signal("damage_report", id, area.shooter_id, shoot_damage)

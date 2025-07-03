@@ -13,11 +13,12 @@ signal player_changed_team(player_changed_team_id)
 signal player_sonicked(player_sonicked_id)
 signal player_updated(player_data: PlayerData)
 
-@onready var chat_screen = $Control/VBoxContainer
-@onready var input_chat = $Control/VBoxContainer/Input
-@onready var output_chat = $Control/VBoxContainer/OutputContainer/MarginContainer/Output
-@onready var status_screen = $Control/PanelContainer/Status
-@onready var ping_screen = $Control/PanelContainer2/Ping
+@onready var chat_screen = $Control/ChatVBoxContainer
+@onready var input_chat = $Control/ChatVBoxContainer/Input
+@onready var output_chat = $Control/ChatVBoxContainer/OutputContainer/MarginContainer/Output
+@onready var status_screen = $Control/StatusContainer/Status
+@onready var ping_screen = $Control/PingContainer/Ping
+@onready var fps_screen = $Control/FpsContainer/Fps
 @onready var output_ranking = $Control/RankingVBoxContainer/RankingContainer/MarginContainer/RankingOutput
 @onready var ranking_screen = $Control/RankingVBoxContainer
 @onready var ping_timer: Timer = $PingTimer
@@ -27,8 +28,8 @@ signal player_updated(player_data: PlayerData)
 var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
 #var websocket_url = "ws://127.0.0.1:8080"
 var game_title = "[color='yellow']PROTITP DIALGO[/color]\n"
-var version = "[color='yellow']Versão 0.0.0.45 Prototype - 01/07/2025 [/color]"
-var ping_paused = true
+var version = "[color='yellow']Versão 0.0.0.46 Prototype - 03/07/2025 [/color]"
+var ping_paused = false
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
@@ -88,6 +89,8 @@ func _ready() -> void:
 	
 func _process(delta: float) -> void:
 	# Envia e recebe frames inicias de abertura (HTTP -> Websocket)
+	
+	fps_screen.text = "FPS: "+str(Engine.get_frames_per_second())
 
 	socket.poll()
 	
