@@ -10,7 +10,7 @@
 script = ExtResource("1_0xm2m")
 
 [node name="MobSpawnTimer" type="Timer" parent="."]
-autostart = true
+wait_time = 0.102
 
 [node name="MainGame" type="Node2D" parent="."]
 script = ExtResource("3_h2yge")
@@ -19,7 +19,7 @@ enemy_scene = ExtResource("2_h2yge")
 
 [node name="Client" parent="." instance=ExtResource("4_1bvp3")]
 
-[connection signal="timeout" from="MobSpawnTimer" to="." method="_on_mob_spawn_timer_timeout"]
+[connection signal="timeout" from="MobSpawnTimer" to="MainGame" method="_on_mob_spawn_timer_timeout"]
 [connection signal="other_player_connected" from="Client" to="MainGame" method="_on_client_other_player_connected"]
 [connection signal="other_player_disconnected" from="Client" to="MainGame" method="_on_client_other_player_disconnected"]
 [connection signal="other_player_moved" from="Client" to="MainGame" method="_on_client_other_player_moved"]
@@ -32,3 +32,4 @@ enemy_scene = ExtResource("2_h2yge")
 [connection signal="player_shoot" from="Client" to="MainGame" method="_on_client_player_shoot"]
 [connection signal="player_sonicked" from="Client" to="MainGame" method="_on_client_player_sonicked"]
 [connection signal="player_updated" from="Client" to="MainGame" method="_on_client_player_updated"]
+[connection signal="rat_attacked" from="Client" to="MainGame" method="_on_client_rat_attacked"]

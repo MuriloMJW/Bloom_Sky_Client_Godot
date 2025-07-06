@@ -3,6 +3,7 @@ extends Node2D
 @export var enemy_scene: PackedScene
 
 @onready var client = $"../Client"
+@onready var mob_spawn_timer = $"../MobSpawnTimer"
 
 # Dictionary ID : Player Instance
 var my_id = -1
@@ -36,19 +37,22 @@ func spawn_player(player_data):
 		# Ligando sinais do player no client
 		new_player.move_pressed.connect(client._on_player_move_pressed)
 		new_player.shoot_pressed.connect(client._on_player_shoot_pressed)
-		new_player.damage_report.connect(client._on_player_damage_report)
+		#new_player.damage_report.connect(client._on_player_damage_report)
 		new_player.respawn_pressed.connect(client._on_respawn_pressed)
 		new_player.change_team_pressed.connect(client._on_player_change_team_pressed)
 		new_player.sonic_pressed.connect(client._on_player_sonic_pressed)
+		client.focus_changed.connect(new_player._on_client_focus_changed)
 
 func spawn_enemy():
-	var spawn_x = randi_range(0, get_viewport().get_visible_rect().size.x)
-	var spawn_y = 0
-	var enemy = enemy_scene.instantiate()
-	enemy.position.x = spawn_x
-	enemy.position.y = spawn_y
-	
-	add_child(enemy)
+	for i in range(500):
+		var spawn_x = randi_range(0, get_viewport().get_visible_rect().size.x)
+		var spawn_y = 0
+		var enemy = enemy_scene.instantiate()
+		enemy.position.x = spawn_x
+		enemy.position.y = spawn_y
+		
+		add_child(enemy)
+		await get_tree().create_timer(0.07).timeout
 	
 
 
@@ -78,12 +82,8 @@ func _on_client_other_player_moved(other_player_x: Variant, other_player_y: Vari
 	players_connected[other_player_id].position.y = other_player_y
 
 
-func _on_client_player_shoot(shooter_id: Variant) -> void:
-	players_connected[shooter_id].shoot()
-
-
-func _on_client_other_player_shoot(other_player_id: Variant) -> void:
-	players_connected[other_player_id].shoot()
+func _on_client_player_shoot(shooter_id, bullet_speed, bullet_direction) -> void:
+	players_connected[shooter_id].shoot(bullet_speed, bullet_direction)
 
 
 func _on_client_player_damaged(damaged_id: Variant, damager_id: Variant, damage: Variant, player_hp: Variant) -> void:
@@ -115,3 +115,8 @@ func _on_client_player_sonicked(player_sonicked_id: Variant) -> void:
 
 func _on_client_player_updated(player_data: PlayerData) -> void:
 	players_connected[player_data.id].setup(player_data)
+
+
+func _on_client_rat_attacked() -> void:
+	spawn_enemy()
+	

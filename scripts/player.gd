@@ -45,8 +45,9 @@ var shoot_damage := 20
 # --- Variáveis de Animação
 var is_dying: bool = false
 
+var game_focused
+
 var authoritative_position = position
-var last_sent_movement = Vector2.ZERO
 
 #================= SETTERS =============== #
 
@@ -87,13 +88,15 @@ func set_hp(value):
 
 func set_total_kills(value):
 	total_kills = value
-	increase_size()
+	#increase_size()
 	
 func set_speed(value):
 	speed = value
 
 func set_shoot_cooldown(value):
 	shoot_cooldown = value
+	if(is_node_ready()):
+		shoot_cooldown_timer.wait_time = value
 
 # ================== INICIO ====================== #
 
@@ -140,17 +143,14 @@ func _ready():
 	authoritative_cube = authoritative_cube_scene.instantiate()
 	get_parent().add_child(authoritative_cube)
 	
-	if(self.team_id == 0):
-		position.x = 100
-		position.y = 100
-	else:
-		position.x = 100
-		position.y = 500
+	game_focused = true
 
 
 func _physics_process(delta):
+	
+	
 	# Se é meu jogador e se está vivo
-	if(is_my_player and is_alive):
+	if(is_my_player and is_alive and game_focused):
 		# === MOVIMENTO == #
 		handle_movement_input(delta)
 		#handle_movement_input_game_loop_mode(delta)
@@ -172,7 +172,7 @@ func _physics_process(delta):
 		handle_other_player_moved(delta)
 			
 	# Se é meu jogador e está morto e apertou respawn
-	if(is_my_player and !is_alive and Input.is_action_just_pressed("respawn_input")):
+	if(is_my_player and !is_alive and Input.is_action_just_pressed("respawn_input") and game_focused):
 		#respawn(position.x, position.y)
 		emit_signal("respawn_pressed", id)
 
@@ -200,39 +200,20 @@ func handle_other_player_moved(delta):
 
 func handle_shoot_input():
 	
+	# Redundancia pra não ficar enviando packet atoa
 	if shoot_cooldown_timer.is_stopped():
 		emit_signal("shoot_pressed", id)
 		shoot_cooldown_timer.start(shoot_cooldown)
-	'''
-	var bullet = bullet_scene.instantiate()
-	bullet.position = self.position
-	bullet.rotation = player_body.rotation
-	bullet.is_moving_up = self.team_id == 0
-	bullet.shooter_id = id
-	get_parent().add_child(bullet)
-	'''
-	
-	
-	'''
-	if(is_alive):
-		var bullet = bullet_scene.instantiate()
-		bullet.position = position
-		bullet.is_moving_up = is_team_up
-		bullet.shooter_id = id
-		if(animation.current_animation == "sonic"):
-			bullet.rotation = self.rotation
-			#bullet.direction = Vector2.UP.rotated(global_rotation)
-		get_parent().add_child(bullet)
-	'''
 
-func shoot():
+func shoot(bullet_speed, bullet_direction):
 	
 	
 	#if shoot_cooldown_timer.is_stopped():
 	
 	var bullet = bullet_scene.instantiate()
 	bullet.position = self.position
-	bullet.rotation = player_body.rotation
+	bullet.speed = bullet_speed
+	bullet.rotation = deg_to_rad(bullet_direction)
 	bullet.shooter_id = id
 	get_parent().add_child(bullet)
 	get_parent().add_child(authoritative_cube)
@@ -330,3 +311,7 @@ func _on_player_body_area_entered(area: Area2D) -> void:
 	if(is_my_player and area.is_in_group("bullet") and area.shooter_id != id and self.hp > 0):
 		print("====GOT HIT====")
 		#emit_signal("damage_report", id, area.shooter_id, shoot_damage)
+
+func _on_client_focus_changed(game_focus):
+	game_focused = game_focus
+	print("FUI CHAMADO ", game_focused)

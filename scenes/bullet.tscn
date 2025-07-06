@@ -26,7 +26,6 @@ grow_vertical = 2
 color = Color(0.806542, 0.000108294, 0.159903, 1)
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
-position = Vector2(2.38419e-07, 0)
 scale = Vector2(0.4, 1.5)
 
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]

@@ -8,10 +8,12 @@ signal other_player_moved(other_player_x, other_player_y, other_player_id)
 signal player_damaged(damaged_id, player_damager_id, damage, player_hp)
 signal player_killed(killed_id, player_damaged_id, player_damager_id, damage, player_is_alive, player_hp)
 signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
-signal player_shoot(player_id)
+signal player_shoot(player_id, speed, direction)
 signal player_changed_team(player_changed_team_id)
 signal player_sonicked(player_sonicked_id)
 signal player_updated(player_data: PlayerData)
+signal rat_attacked()
+signal focus_changed(is_game_focused: bool)
 
 @onready var chat_screen = $Control/ChatVBoxContainer
 @onready var input_chat = $Control/ChatVBoxContainer/Input
@@ -24,12 +26,15 @@ signal player_updated(player_data: PlayerData)
 @onready var ping_timer: Timer = $PingTimer
 
 
-#var websocket_url = "ws://127.0.0.1:9913"
-var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
+var websocket_url = "ws://127.0.0.1:9913"
+#var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
 #var websocket_url = "ws://127.0.0.1:8080"
 var game_title = "[color='yellow']PROTITP DIALGO[/color]\n"
 var version = "[color='yellow']Versão 0.0.0.46 Prototype - 03/07/2025 [/color]"
 var ping_paused = false
+var debug_send_packet = false
+var debug_received_packet = false
+
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
@@ -70,6 +75,7 @@ enum Network {
 	PLAYER_UPDATED = 112,
 	PLAYER_SETUP = 113,
 	
+	RAT_ATTACKED = 198,
 	RANKING_UPDATED = 199,
 	CHAT_RECEIVED = 200,
 	
@@ -85,9 +91,11 @@ func _ready() -> void:
 	ranking_screen.hide()
 	socket.connect_to_url(websocket_url)
 	output_ranking.text = ''
-	input_chat.focus_next
+	#input_chat.focus_next
 	
 func _process(delta: float) -> void:
+	
+
 	# Envia e recebe frames inicias de abertura (HTTP -> Websocket)
 	
 	fps_screen.text = "FPS: "+str(Engine.get_frames_per_second())
@@ -100,10 +108,15 @@ func _process(delta: float) -> void:
 	
 	if(state == socket.STATE_OPEN):
 		_wait_packets()
-		
+	#print(input_chat.has_focus())
+	#print(get_viewport().gui_get_focus_owner())
 	if(Input.is_action_just_pressed("enter_pressed")):
 		if(not input_chat.has_focus()):
 			input_chat.grab_focus()
+			emit_signal("focus_changed", false)
+		else:
+			input_chat.release_focus()
+			emit_signal("focus_changed", true)
 	
 func _handle_state_change(state):
 	
@@ -142,21 +155,23 @@ func _wait_packets():
 		receive_packet(socket.get_packet())
 	
 func _send_packet(buffer):
-	print("===ENVIANDO PACKET===")
-	print(buffer.data_array)
+	if (debug_send_packet):
+		print("===ENVIANDO PACKET===")
+		print(buffer.data_array)
 	socket.send(buffer.data_array)
 
 func receive_packet(packet):
-	print("===RECEBIDO===")
-	#print(socket.get_packet())
-	
-	print("Packet received: ", packet)
-	
-	'''
-	for i in range(packet.size()):
-		var b = packet[i]
-		print("Byte %d: %d" % [i, b])
-	'''
+	if (debug_received_packet):
+		print("===RECEBIDO===")
+		#print(socket.get_packet())
+		
+		print("Packet received: ", packet)
+		
+		'''
+		for i in range(packet.size()):
+			var b = packet[i]
+			print("Byte %d: %d" % [i, b])
+		'''
 	
 	var buffer = MyBuffer.new(packet)
 	
@@ -177,6 +192,9 @@ func receive_packet(packet):
 		
 		Network.PLAYER_UPDATED:
 			_handle_player_updated(buffer)
+			
+		Network.RAT_ATTACKED:
+			_handle_rat_attacked(buffer)
 			
 		Network.RANKING_UPDATED:
 			_handle_ranking_updated(buffer)
@@ -300,7 +318,6 @@ func _handle_player_connected(buffer):
 				attribute_value = buffer.read_u64()
 			"float":
 				attribute_value = buffer.read_float()
-				print("Li float ", attribute_value)
 			"string":
 				attribute_value = buffer.read_string()
 			_:
@@ -374,12 +391,20 @@ func _handle_other_player_moved(buffer):
 func _handle_player_shoot(buffer):
 	print("===PLAYER SHOOT===")
 	var shooter_id = buffer.read_u8()
-	emit_signal("player_shoot", shooter_id)
+	var speed = buffer.read_u16()
+	var direction = buffer.read_u16()
+	emit_signal("player_shoot", shooter_id, speed, direction)
 
 func _handle_player_sonicked(buffer):
 	print("===PLAYER SONICKED===")
 	var player_sonicked_id = buffer.read_u8()
 	emit_signal("player_sonicked", player_sonicked_id)
+	
+func _handle_rat_attacked(buffer):
+	print("===RAT ATACKED===")
+	emit_signal("rat_attacked")
+	
+	
 	
 func _handle_ranking_updated(buffer):
 	var ranking_text_received = buffer.read_string()

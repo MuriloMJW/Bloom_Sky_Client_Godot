@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cat57uoigpfw1"]
+[gd_scene load_steps=3 format=3 uid="uid://cat57uoigpfw1"]
 
 [ext_resource type="Script" uid="uid://w45is7vgb24" path="res://scripts/enemy.gd" id="1_7k104"]
+[ext_resource type="Texture2D" uid="uid://ctaw1m1vly7mc" path="res://sprites/TIFINHA.png" id="2_md0e3"]
 
 [node name="Enemy" type="Area2D" groups=["enemy"]]
 script = ExtResource("1_7k104")
@@ -15,6 +16,11 @@ polygon = PackedVector2Array(-30, -20, 30, -20, 0.5, 25)
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
 position = Vector2(0, 2)
 scale = Vector2(0.4, 2.2)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(6, -4)
+scale = Vector2(1.64, 1.57)
+texture = ExtResource("2_md0e3")
 
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_visible_on_screen_notifier_2d_screen_exited"]
