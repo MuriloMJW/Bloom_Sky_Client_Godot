@@ -6,7 +6,6 @@ signal damage_report(damaged_id, damager_id, damage_value)
 signal respawn_pressed(id)
 signal change_team_pressed()
 signal sonic_pressed()
-signal enter_pressed()
 
 @onready var username_label = $username
 @onready var hp_bar = $ProgressBar
@@ -17,12 +16,17 @@ signal enter_pressed()
 @onready var animation = $AnimationPlayer
 @onready var shoot_cooldown_timer = $ShootCooldownTimer
 @onready var timer = $Timer
+@onready var player_sprite = $PlayerBody/Sprite
 
+
+var ship_sky_frames = load("res://resources/ship_sky_frames.tres")
+var ship_bloom_frames = load("res://resources/ship_bloom_frames.tres")
 var bullet_scene = load("res://scenes/bullet.tscn")
 var authoritative_cube_scene = load("res://scenes/authoritative_cube.tscn")
 var authoritative_cube = null
 
-var id: int
+var id: int 
+var username: String
 var start_x: float
 var start_y: float
 
@@ -122,14 +126,17 @@ func setup(player_data):
 		self.speed = player_data.speed
 	if player_data.shoot_cooldown != null:
 		self.shoot_cooldown = player_data.shoot_cooldown
+	if player_data.username != null:
+		self.username = player_data.username
 	
 	# self.is_sonicking = false
 
 func _ready():
 	collision_shape.disabled = false
-	box.show()
+	#box.hide()
+	player_sprite.hide()
 	username_label.show()
-	username_label.text = str(id)
+	username_label.text = "["+str(id)+"] "+username
 	
 	# O StyleBox é um resource e resource é compartilhada entre os jogadores.
 	# Para evitar que todos usem o mesmo stylebox, e criamos uma cópia única
@@ -144,6 +151,9 @@ func _ready():
 	get_parent().add_child(authoritative_cube)
 	
 	game_focused = true
+	
+	if(is_my_player):
+		username_label.add_theme_color_override("font_color", Color.GOLD)
 
 
 func _physics_process(delta):
@@ -183,6 +193,39 @@ func handle_movement_input(delta):
 	# Se apertar para cima       o movement recebe (0, -1)
 	# Se apertar esquerda e cima o movement recebe (-0.75, -0.75)
 	
+	authoritative_cube.hide()
+	
+	var new_animation = "default"
+
+	if movement != Vector2.ZERO:
+		
+		# --- DIAGONAIS ---
+		if movement.x < 0 and movement.y < 0: # Cima-Esquerda
+			new_animation = "move_backward_sided"
+			player_sprite.flip_h = false if self.team_id == 0 else true
+		elif movement.x > 0 and movement.y < 0: # Cima-Direita
+			new_animation = "move_backward_sided"
+			player_sprite.flip_h = true if self.team_id == 0 else false
+		elif movement.x < 0 and movement.y > 0: # Baixo-Esquerda
+			new_animation = "move_forward_sided"
+			player_sprite.flip_h = false if self.team_id == 0 else true
+		elif movement.x > 0 and movement.y > 0: # Baixo-Direita
+			new_animation = "move_forward_sided"
+			player_sprite.flip_h = true if self.team_id == 0 else false
+		elif movement.x < 0:
+			new_animation = "move_sideway"
+			player_sprite.flip_h = false if self.team_id == 0 else true
+		elif movement.x > 0:
+			new_animation = "move_sideway"
+			player_sprite.flip_h = true if self.team_id == 0 else false
+		elif movement.y < 0:
+			new_animation = "move_backward"
+		elif movement.y > 0:
+			new_animation = "move_forward"
+
+
+	if player_sprite.animation != new_animation :
+		player_sprite.play(new_animation)
 	
 	if movement != Vector2.ZERO:
 		emit_signal("move_pressed", movement.x, movement.y)
@@ -192,11 +235,64 @@ func handle_movement_input(delta):
 	
 	if position.distance_to(authoritative_position) > 1:
 		position = position.lerp(authoritative_position, 0.36)
-	
-		
-func handle_other_player_moved(delta):
-	position = authoritative_position
 
+		
+var last_authoritative_position = Vector2.ZERO	
+var time_since_last_update = 0.0
+	
+func handle_other_player_moved(delta):
+	time_since_last_update+= delta
+	
+	var movement_vector = authoritative_position - last_authoritative_position
+
+	position = position.lerp(authoritative_position, 0.36)
+	
+	authoritative_cube.show()
+	authoritative_cube.position = position
+	
+	var new_animation = "default"
+
+	#Se o player se moveu, aplica a lógica de animação
+	if movement_vector.length_squared() > 0.0001:
+		time_since_last_update = 0.0
+		# Normaliza o vetor para obter apenas a direção, como o Input.get_vector() faz
+		var direction = movement_vector.normalized()
+		
+
+		if direction.x < -0.4 and direction.y < -0.4: # Cima-Esquerda
+			new_animation = "move_backward_sided"
+			player_sprite.flip_h = false if self.team_id == 0 else true
+		elif direction.x > 0.4 and direction.y < -0.4: # Cima-Direita
+			new_animation = "move_backward_sided"
+			player_sprite.flip_h = true if self.team_id == 0 else false
+		elif direction.x < -0.4 and direction.y > 0.4: # Baixo-Esquerda
+			new_animation = "move_forward_sided"
+			player_sprite.flip_h = false if self.team_id == 0 else true
+		elif direction.x > 0.4 and direction.y > 0.4: # Baixo-Direita
+			new_animation = "move_forward_sided"
+			player_sprite.flip_h = true if self.team_id == 0 else false
+		# --- RETAS ---
+		elif direction.x < 0:
+			new_animation = "move_sideway"
+			player_sprite.flip_h = false if self.team_id == 0 else true
+		elif direction.x > 0:
+			new_animation = "move_sideway"
+			player_sprite.flip_h = true if self.team_id == 0 else false
+		elif direction.y < 0:
+			new_animation = "move_backward"
+		elif direction.y > 0:
+			new_animation = "move_forward"
+	
+	
+		# Toca a nova animação apenas se ela for diferente da atual
+		if player_sprite.animation != new_animation:
+			player_sprite.play(new_animation)
+		
+	elif time_since_last_update > 0.10:
+		if player_sprite.animation != "default":
+			player_sprite.play("default")
+
+	last_authoritative_position = authoritative_position
 
 func handle_shoot_input():
 	
@@ -216,7 +312,6 @@ func shoot(bullet_speed, bullet_direction):
 	bullet.rotation = deg_to_rad(bullet_direction)
 	bullet.shooter_id = id
 	get_parent().add_child(bullet)
-	get_parent().add_child(authoritative_cube)
 	shoot_cooldown_timer.start(shoot_cooldown)
 	
 
@@ -252,11 +347,13 @@ func update_is_alive_visual():
 	if(self.is_alive):
 		reset_size()
 		collision_shape.disabled = false
-		box.show()
+		#box.show()
+		player_sprite.show()
 		username_label.show()
 	else:
 		collision_shape.disabled = true
 		box.hide()
+		player_sprite.hide()
 		username_label.hide()
 
 func update_hp_visual():
@@ -281,12 +378,21 @@ func update_team_visual():
 		team_id = 0
 		print("FUI CHAMADO ROTATION")
 		player_body.set_rotation_degrees(180)
+		player_sprite.sprite_frames = ship_sky_frames
+		player_sprite.flip_v = false
+		hp_bar.position.y = -80
+		username_label.position.y = -74
+		
+		
 	else: # BLOOM
 		#$username.add_theme_color_override("font_color", Color.DEEP_PINK)
 		box.color = Color.from_rgba8(255, 102, 250, 255)
 		team_id = 1
 		player_body.set_rotation_degrees(0)
-
+		player_sprite.sprite_frames = ship_bloom_frames
+		player_sprite.flip_v = true
+		hp_bar.position.y = 57
+		username_label.position.y = 63
 func update_all_visuals():
 	update_hp_visual()
 	update_team_visual()
@@ -312,6 +418,6 @@ func _on_player_body_area_entered(area: Area2D) -> void:
 		print("====GOT HIT====")
 		#emit_signal("damage_report", id, area.shooter_id, shoot_damage)
 
-func _on_client_focus_changed(game_focus):
+func _on_ui_focus_changed(game_focus):
 	game_focused = game_focus
 	print("FUI CHAMADO ", game_focused)

@@ -1,0 +1,16 @@
+[gd_scene load_steps=5 format=3 uid="uid://biqn5vlww8k7b"]
+
+[ext_resource type="Script" uid="uid://tfq3an75qm43" path="res://scripts/backups/game_old.gd" id="1_iywne"]
+[ext_resource type="PackedScene" uid="uid://tea8ha7p6hww" path="res://scenes/player.tscn" id="3_u5sy4"]
+[ext_resource type="PackedScene" uid="uid://cat57uoigpfw1" path="res://scenes/enemy.tscn" id="4_gee14"]
+[ext_resource type="PackedScene" uid="uid://bfwnxi4mcvuso" path="res://scenes/client.tscn" id="5_0tnpc"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_iywne")
+player_scene = ExtResource("3_u5sy4")
+enemy_scene = ExtResource("4_gee14")
+
+[node name="MobSpawnTimer" type="Timer" parent="."]
+wait_time = 0.102
+
+[node name="Client" parent="." instance=ExtResource("5_0tnpc")]

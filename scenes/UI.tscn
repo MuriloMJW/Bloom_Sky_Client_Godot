@@ -1,0 +1,166 @@
+[gd_scene load_steps=6 format=3 uid="uid://cw4ppd1x8u0vu"]
+
+[ext_resource type="Script" uid="uid://dts6e47na132d" path="res://scenes/ui.gd" id="1_dj8aq"]
+[ext_resource type="Theme" uid="uid://dd4nsoet5k123" path="res://UI.tres" id="1_ro3t7"]
+
+[sub_resource type="Theme" id="Theme_wusub"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lbhrr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_iywne"]
+
+[node name="UI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 2
+theme = ExtResource("1_ro3t7")
+script = ExtResource("1_dj8aq")
+
+[node name="TopMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+offset_right = 1280.0
+offset_bottom = 47.0
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TopMargin"]
+layout_mode = 2
+
+[node name="Empty" type="MarginContainer" parent="TopMargin/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 15.69
+theme_override_constants/margin_left = 7
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 0
+
+[node name="StatusContainer" type="PanelContainer" parent="TopMargin/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.81
+
+[node name="Status" type="RichTextLabel" parent="TopMargin/HBoxContainer/StatusContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "DISCONNECTED"
+scroll_following = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PingContainer" type="PanelContainer" parent="TopMargin/HBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+
+[node name="Ping" type="RichTextLabel" parent="TopMargin/HBoxContainer/PingContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "0000ms"
+scroll_following = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FpsContainer" type="PanelContainer" parent="TopMargin/HBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+
+[node name="Fps" type="RichTextLabel" parent="TopMargin/HBoxContainer/FpsContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "FPS: 60"
+scroll_following = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -200.0
+offset_right = 1280.0
+grow_vertical = 0
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="HBoxContainer" type="HBoxContainer" parent="BottomMargin"]
+layout_mode = 2
+theme = SubResource("Theme_wusub")
+
+[node name="ChatVBoxContainer" type="VBoxContainer" parent="BottomMargin/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 4.36
+
+[node name="OutputContainer" type="PanelContainer" parent="BottomMargin/HBoxContainer/ChatVBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="BottomMargin/HBoxContainer/ChatVBoxContainer/OutputContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+
+[node name="ChatOutput" type="RichTextLabel" parent="BottomMargin/HBoxContainer/ChatVBoxContainer/OutputContainer/MarginContainer"]
+layout_mode = 2
+focus_mode = 2
+theme_override_font_sizes/normal_font_size = 14
+theme_override_styles/focus = SubResource("StyleBoxEmpty_lbhrr")
+bbcode_enabled = true
+text = "PROTITPO DE ALGO
+Versão Prototype 3.5
+[8] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
+scroll_following = true
+autowrap_mode = 1
+selection_enabled = true
+
+[node name="ChatInput" type="LineEdit" parent="BottomMargin/HBoxContainer/ChatVBoxContainer"]
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_iywne")
+max_length = 300
+deselect_on_focus_loss_enabled = false
+caret_blink = true
+
+[node name="RankingVBoxContainer" type="VBoxContainer" parent="BottomMargin/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RankingContainer" type="PanelContainer" parent="BottomMargin/HBoxContainer/RankingVBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="BottomMargin/HBoxContainer/RankingVBoxContainer/RankingContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 5
+
+[node name="RankingOutput" type="RichTextLabel" parent="BottomMargin/HBoxContainer/RankingVBoxContainer/RankingContainer/MarginContainer"]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = true
+text = "======= RANKING =======
+
+1st Player 10 50/10
+2nd Player 1 50/10
+
+
+"
+scroll_following = true
+horizontal_alignment = 3
+
+[connection signal="focus_entered" from="BottomMargin/HBoxContainer/ChatVBoxContainer/ChatInput" to="." method="_on_chat_input_focus_entered"]
+[connection signal="focus_exited" from="BottomMargin/HBoxContainer/ChatVBoxContainer/ChatInput" to="." method="_on_chat_input_focus_exited"]

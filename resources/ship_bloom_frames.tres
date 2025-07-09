@@ -1,0 +1,75 @@
+[gd_resource type="SpriteFrames" load_steps=11 format=3 uid="uid://cryxiesmpbv63"]
+
+[ext_resource type="Texture2D" uid="uid://dk8acgg82bkpt" path="res://sprites/spritesBloomShip/bloomIdleShip.png" id="1_8eual"]
+[ext_resource type="Texture2D" uid="uid://bgnb5ymlpqnpl" path="res://sprites/spritesBloomShip/bloomBackwards1.png" id="2_f88c4"]
+[ext_resource type="Texture2D" uid="uid://d4abdcyhgegsu" path="res://sprites/spritesBloomShip/bloomBackwards2.png" id="3_5qsw2"]
+[ext_resource type="Texture2D" uid="uid://dpuf3nat3w2mt" path="res://sprites/spritesBloomShip/bloomForward1.png" id="4_77r8t"]
+[ext_resource type="Texture2D" uid="uid://igvxujhp0pc7" path="res://sprites/spritesBloomShip/bloomBackwardsSided1.png" id="4_dgvet"]
+[ext_resource type="Texture2D" uid="uid://cnobe1ocg6on5" path="res://sprites/spritesBloomShip/bloomFoward2.png" id="5_dgvet"]
+[ext_resource type="Texture2D" uid="uid://c5cgxpr5eofb6" path="res://sprites/spritesBloomShip/bloomBackwardsSided2.png" id="5_igm0h"]
+[ext_resource type="Texture2D" uid="uid://ddtheriy772qj" path="res://sprites/spritesBloomShip/bloomSidedShip.png" id="6_igm0h"]
+[ext_resource type="Texture2D" uid="uid://cksuep84xoor5" path="res://sprites/spritesBloomShip/bloomFowardSided1.png" id="8_qrfev"]
+[ext_resource type="Texture2D" uid="uid://djg1l3v82pvk6" path="res://sprites/spritesBloomShip/bloomFowardSided2.png" id="9_wgp7y"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_8eual")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_77r8t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_dgvet")
+}],
+"loop": false,
+"name": &"move_backward",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_qrfev")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_wgp7y")
+}],
+"loop": false,
+"name": &"move_backward_sided",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_f88c4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_5qsw2")
+}],
+"loop": false,
+"name": &"move_forward",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_dgvet")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_igm0h")
+}],
+"loop": false,
+"name": &"move_forward_sided",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_igm0h")
+}],
+"loop": true,
+"name": &"move_sideway",
+"speed": 5.0
+}]

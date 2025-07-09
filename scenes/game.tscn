@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3 uid="uid://cl6le8futy45v"]
+
+[ext_resource type="Script" uid="uid://chph4grqxrms5" path="res://scripts/game.gd" id="1_iywne"]
+[ext_resource type="PackedScene" uid="uid://tea8ha7p6hww" path="res://scenes/player.tscn" id="3_u5sy4"]
+[ext_resource type="PackedScene" uid="uid://cat57uoigpfw1" path="res://scenes/enemy.tscn" id="4_gee14"]
+[ext_resource type="PackedScene" uid="uid://cw4ppd1x8u0vu" path="res://scenes/UI.tscn" id="4_lbhrr"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_iywne")
+player_scene = ExtResource("3_u5sy4")
+enemy_scene = ExtResource("4_gee14")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1280.0
+offset_bottom = 720.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0666667, 0, 0.121569, 1)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UI" parent="CanvasLayer" instance=ExtResource("4_lbhrr")]
+
+[node name="MobSpawnTimer" type="Timer" parent="."]
+
+[connection signal="text_submitted" from="CanvasLayer/UI/BottomMargin/HBoxContainer/ChatVBoxContainer/ChatInput" to="." method="_on_chat_input_text_submitted"]
+
+[editable path="CanvasLayer/UI"]

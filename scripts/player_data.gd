@@ -13,8 +13,8 @@ const PLAYER_BITMASK_LAYOUT = [
 	{"attribute": "team",           "mask": 1 << 5, "data_type": "string"},
 	{"attribute": "total_kills",    "mask": 1 << 6, "data_type": "u16"},
 	{"attribute": "speed",          "mask": 1 << 7, "data_type": "float"},
-	{"attribute": "shoot_cooldown", "mask": 1 << 8, "data_type": "float"}
-	
+	{"attribute": "shoot_cooldown", "mask": 1 << 8, "data_type": "float"},
+	{"attribute": "username",       "mask": 1 << 9, "data_type": "string"}
 ]
 
 @export var id = null
@@ -28,3 +28,4 @@ const PLAYER_BITMASK_LAYOUT = [
 @export var total_kills = null
 @export var speed = null
 @export var shoot_cooldown = null
+@export var username = null

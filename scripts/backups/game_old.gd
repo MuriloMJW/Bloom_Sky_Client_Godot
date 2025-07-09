@@ -2,8 +2,8 @@ extends Node2D
 @export var player_scene: PackedScene
 @export var enemy_scene: PackedScene
 
-@onready var client = $"../Client"
-@onready var mob_spawn_timer = $"../MobSpawnTimer"
+@onready var client = $Client
+@onready var mob_spawn_timer = $MobSpawnTimer
 
 # Dictionary ID : Player Instance
 var my_id = -1

@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="Space Invaders Clone Online"
-run/main_scene="uid://biqn5vlww8k7b"
+run/main_scene="uid://bhoha33l5jb6q"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+Client="*res://scenes/client.tscn"
 
 [display]
 

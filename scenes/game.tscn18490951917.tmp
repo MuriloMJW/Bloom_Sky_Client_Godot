@@ -1,0 +1,161 @@
+[gd_scene load_steps=7 format=3 uid="uid://cl6le8futy45v"]
+
+[ext_resource type="Script" uid="uid://chph4grqxrms5" path="res://scripts/game.gd" id="1_iywne"]
+[ext_resource type="PackedScene" uid="uid://tea8ha7p6hww" path="res://scenes/player.tscn" id="3_u5sy4"]
+[ext_resource type="PackedScene" uid="uid://cat57uoigpfw1" path="res://scenes/enemy.tscn" id="4_gee14"]
+[ext_resource type="PackedScene" uid="uid://bfwnxi4mcvuso" path="res://scenes/client.tscn" id="5_0tnpc"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lbhrr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_iywne"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_iywne")
+player_scene = ExtResource("3_u5sy4")
+enemy_scene = ExtResource("4_gee14")
+
+[node name="Client" parent="." instance=ExtResource("5_0tnpc")]
+
+[node name="HUD" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ChatVBoxContainer" type="VBoxContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = -205.0
+offset_right = -214.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="OutputContainer" type="PanelContainer" parent="HUD/ChatVBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ChatVBoxContainer/OutputContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+
+[node name="ChatOutput" type="RichTextLabel" parent="HUD/ChatVBoxContainer/OutputContainer/MarginContainer"]
+layout_mode = 2
+focus_mode = 2
+theme_override_font_sizes/normal_font_size = 14
+theme_override_styles/focus = SubResource("StyleBoxEmpty_lbhrr")
+bbcode_enabled = true
+text = "PROTITPO DE ALGO
+Versão Prototype 3.5
+[8] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
+scroll_following = true
+autowrap_mode = 1
+selection_enabled = true
+
+[node name="ChatInput" type="LineEdit" parent="HUD/ChatVBoxContainer"]
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_iywne")
+max_length = 300
+deselect_on_focus_loss_enabled = false
+caret_blink = true
+
+[node name="RankingVBoxContainer" type="VBoxContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -210.0
+offset_top = -205.0
+offset_right = -3.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="RankingContainer" type="PanelContainer" parent="HUD/RankingVBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/RankingVBoxContainer/RankingContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 5
+
+[node name="RankingOutput" type="RichTextLabel" parent="HUD/RankingVBoxContainer/RankingContainer/MarginContainer"]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = true
+text = "======= RANKING =======
+
+1st Player 10 50/10
+2nd Player 1 50/10
+
+
+"
+scroll_following = true
+horizontal_alignment = 3
+
+[node name="StatusContainer" type="PanelContainer" parent="HUD"]
+layout_mode = 1
+offset_right = 159.0
+offset_bottom = 40.0
+
+[node name="Status" type="RichTextLabel" parent="HUD/StatusContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Offline"
+scroll_following = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PingContainer" type="PanelContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -90.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="Ping" type="RichTextLabel" parent="HUD/PingContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "0000ms"
+scroll_following = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FpsContainer" type="PanelContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -184.0
+offset_right = -94.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="Fps" type="RichTextLabel" parent="HUD/FpsContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "FPS: 60"
+scroll_following = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="player_connected" from="Client" to="." method="_on_client_player_connected"]
+[connection signal="text_submitted" from="HUD/ChatVBoxContainer/ChatInput" to="." method="_on_chat_input_text_submitted"]

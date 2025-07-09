@@ -1,63 +1,68 @@
 extends Node
 
+@onready var ping_timer: Timer = $PingTimer
+
+# Conectam no main menu
+signal auth_success
+signal auth_fail
+
+# Conectam no Game
+#signal login_successful
 signal player_connected(player_data: PlayerData)
 signal other_player_connected(player_data: PlayerData)
 signal other_player_disconnected(other_player_id)
-signal player_moved(player_x, player_y)
-signal other_player_moved(other_player_x, other_player_y, other_player_id)
-signal player_damaged(damaged_id, player_damager_id, damage, player_hp)
-signal player_killed(killed_id, player_damaged_id, player_damager_id, damage, player_is_alive, player_hp)
-signal player_respawned(player_respawned_id, player_respawned_x, player_respawned_y)
 signal player_shoot(player_id, speed, direction)
-signal player_changed_team(player_changed_team_id)
 signal player_sonicked(player_sonicked_id)
 signal player_updated(player_data: PlayerData)
 signal rat_attacked()
-signal focus_changed(is_game_focused: bool)
 
-@onready var chat_screen = $Control/ChatVBoxContainer
-@onready var input_chat = $Control/ChatVBoxContainer/Input
-@onready var output_chat = $Control/ChatVBoxContainer/OutputContainer/MarginContainer/Output
-@onready var status_screen = $Control/StatusContainer/Status
-@onready var ping_screen = $Control/PingContainer/Ping
-@onready var fps_screen = $Control/FpsContainer/Fps
-@onready var output_ranking = $Control/RankingVBoxContainer/RankingContainer/MarginContainer/RankingOutput
-@onready var ranking_screen = $Control/RankingVBoxContainer
-@onready var ping_timer: Timer = $PingTimer
+# Hud do Game
+signal connection_status_updated(connection_status_text: String)
+signal ping_updated(ping_text: String)
+signal chat_updated(chat_text: String)
+signal ranking_updated(ranking_text: String)
 
 
 var websocket_url = "ws://127.0.0.1:9913"
 #var websocket_url = "wss://3ae453be-0bb5-4226-9e4d-e6a65193784a-00-2juxj2mj683q2.janeway.replit.dev/"
 #var websocket_url = "ws://127.0.0.1:8080"
-var game_title = "[color='yellow']PROTITP DIALGO[/color]\n"
-var version = "[color='yellow']Versão 0.0.0.46 Prototype - 03/07/2025 [/color]"
-var ping_paused = false
+#var websocket_url = "wss://organic-potato-wvrj76v76g6hv7x-8080.app.github.dev/"
+
 var debug_send_packet = false
 var debug_received_packet = false
-
+var ping_paused = false
 
 var socket := WebSocketPeer.new()
 var last_state = WebSocketPeer.STATE_CLOSED
+
 var my_id = -1
 
+var connection_status_text = "Null"
+#var my_player_data_cache: PlayerData = null
+#var other_player_data_cache: Array[PlayerData] = []
+
 enum Network {
-	# Client -> Server
-	REQUEST_CONNECT = 0,
+	# === Client -> Server ===
+	REQUEST_AUTH = 0,
+	REQUEST_CONNECT = 1,
 	
-	REQUEST_PLAYER_MOVE = 1,
+	REQUEST_PLAYER_MOVE = 2,
 	
-	REQUEST_PLAYER_SHOOT = 2,
-	REQUEST_PLAYER_DAMAGE = 3,
-	REQUEST_PLAYER_RESPAWN = 4,
-	REQUEST_PLAYER_CHANGE_TEAM = 5,
-	REQUEST_PLAYER_SONIC = 6,
+	REQUEST_PLAYER_SHOOT = 3,
+	REQUEST_PLAYER_DAMAGE = 4,
+	REQUEST_PLAYER_RESPAWN = 5,
+	REQUEST_PLAYER_CHANGE_TEAM = 6,
+	REQUEST_PLAYER_SONIC = 7,
+	
+	REQUEST_PLAYER_UPDATE = 8,
 	
 	CHAT_MESSAGE = 100,
-	
 	PING = 254,
 	
-	# Server -> Client
-	PLAYER_CONNECTED = 100,
+	# === Server -> Client ===
+	AUTH_SUCCESS = 65,
+	AUTH_FAIL = 66,
+	PLAYER_CONNECTED = 67,
 	OTHER_PLAYER_CONNECTED = 101,
 	OTHER_PLAYER_DISCONNECTED = 102,
 	
@@ -83,22 +88,14 @@ enum Network {
 }
 
 func _ready() -> void:
-	output_chat.text = game_title
-	output_chat.text += version+"\n"
 	ping_timer.paused = ping_paused
-	chat_screen.hide()
-	output_ranking.hide()
-	ranking_screen.hide()
 	socket.connect_to_url(websocket_url)
-	output_ranking.text = ''
+	
 	#input_chat.focus_next
 	
 func _process(delta: float) -> void:
-	
 
 	# Envia e recebe frames inicias de abertura (HTTP -> Websocket)
-	
-	fps_screen.text = "FPS: "+str(Engine.get_frames_per_second())
 
 	socket.poll()
 	
@@ -110,13 +107,7 @@ func _process(delta: float) -> void:
 		_wait_packets()
 	#print(input_chat.has_focus())
 	#print(get_viewport().gui_get_focus_owner())
-	if(Input.is_action_just_pressed("enter_pressed")):
-		if(not input_chat.has_focus()):
-			input_chat.grab_focus()
-			emit_signal("focus_changed", false)
-		else:
-			input_chat.release_focus()
-			emit_signal("focus_changed", true)
+
 	
 func _handle_state_change(state):
 	
@@ -125,36 +116,52 @@ func _handle_state_change(state):
 	
 	last_state = state
 	
+	connection_status_text = "Null"
 	match state:
 		
 		socket.STATE_CONNECTING:
 			print("CONNECTING...")
-			status_screen.text = "Conectando..."
-				
+			connection_status_text = "Conectando..."
+			
 		socket.STATE_OPEN:
-			_on_state_open()
+			print("OPEN!")
+			connection_status_text = "[color=green]Conectado[/color]"
+			#_request_connect()
+			#_on_state_open()
 			
 		socket.STATE_CLOSING:
 			print("CLOSING...")
-			status_screen.text = "Desconectando..."
-				
+			connection_status_text = "Desconectando..."
 		socket.STATE_CLOSED:
 			print("CLOSED")
-			status_screen.text = "[color=red]Desconectado[/color]"
+			connection_status_text = "[color=red]Desconectado[/color]"
 			
 	
+	emit_signal("connection_status_updated", connection_status_text)
 	return
 			
 func _on_state_open():
-	print("OPEN!")
-	status_screen.text = "Open"
+	# Emite o sinal para a tela do game para,
+	# quando carregada ela enviar o request_connect
+	#emit_signal("connection_open") < Tentativa
 	#_request_connect()
+	pass
 	
 func _wait_packets():
 	while (socket.get_available_packet_count() > 0):
 		receive_packet(socket.get_packet())
 	
-func _send_packet(buffer):
+func _send_packet(buffer: MyBuffer):
+	var msg_id = buffer.read_u8()
+	
+	if(socket.get_ready_state() != socket.State.STATE_OPEN):
+		print("ERRO: TENTANDO ENVIAR PACKET COM SERVIDOR FECHADO: MSG_ID:", msg_id)
+		return
+	
+	#TODO?
+	if my_id == -1 and msg_id != Network.REQUEST_AUTH and msg_id != Network.REQUEST_CONNECT:
+		return
+	
 	if (debug_send_packet):
 		print("===ENVIANDO PACKET===")
 		print(buffer.data_array)
@@ -178,6 +185,10 @@ func receive_packet(packet):
 	var msgid = buffer.read_u8()
 	
 	match msgid:
+		Network.AUTH_SUCCESS:
+			emit_signal("auth_success")
+		Network.AUTH_FAIL:
+			emit_signal("auth_fail")
 		Network.PLAYER_CONNECTED:
 			_handle_player_connected(buffer)
 			
@@ -207,10 +218,17 @@ func receive_packet(packet):
 			
 		_:
 			print("PACOTE NÃO TRATADO: ", msgid)
-			
 
 
 # --- [ PEDIDOS AO SERVIDOR ] --- #
+
+func _request_authentication(username : String):
+	print("===REQUEST AUTH===")
+	var buffer : MyBuffer
+	buffer = MyBuffer.new()
+	buffer.write_u8(Network.REQUEST_AUTH)
+	buffer.write_string(username)
+	_send_packet(buffer)
 
 func _request_connect():
 	print("===REQUEST CONNECT===")
@@ -220,7 +238,7 @@ func _request_connect():
 	_send_packet(buffer)
 
 func _request_player_move(move_x, move_y):
-	print("===REQUEST PLAYER MOVE===")
+	#print("===REQUEST PLAYER MOVE===")
 	var buffer : MyBuffer
 	buffer = MyBuffer.new()
 	buffer.write_u8(Network.REQUEST_PLAYER_MOVE)
@@ -267,22 +285,18 @@ func _request_player_sonic():
 	buffer.write_u8(Network.REQUEST_PLAYER_SONIC)
 	_send_packet(buffer)
 
-func _player_chat():
+func _request_player_chat(chat_text):
 	print("===PLAYER CHAT===")
-	var text = input_chat.text
-	if text == "":
-		return
-		
-	input_chat.text = ""
 		
 	var buffer : MyBuffer
 	buffer = MyBuffer.new()
 	buffer.write_u8(Network.CHAT_MESSAGE)
-	buffer.write_string(text)
+	buffer.write_string(chat_text)
 
 	_send_packet(buffer)
 
 func _ping():
+	
 	var timestamp_now = Time.get_ticks_msec()
 	
 	var buffer : MyBuffer
@@ -326,25 +340,23 @@ func _handle_player_connected(buffer):
 		player_data.set(attribute, attribute_value)
 
 	if(is_my_player == Network.PLAYER_CONNECTED):
-		print("===ME CONNECTED===")
-		status_screen.text = "Conectado"
-		chat_screen.show()
-		output_ranking.show()
-		ranking_screen.show()
 		my_id = player_data.id
+		#my_player_data_cache = player_data
 		emit_signal("player_connected", player_data)
+		#emit_signal("login_successful")
 	else:
 		print("===OTHER PLAYER CONNECTED===")
+		#other_player_data_cache.append(player_data)
 		emit_signal("other_player_connected", player_data)
 
 func _handle_player_updated(buffer):
-	print("===PLAYER UPDATED===")
+	#print("===PLAYER UPDATED===")
 	
 	var player_data = PlayerData.new()
 	player_data.id = buffer.read_u8()
 	
 	var mask = buffer.read_u16()
-	print("MASK: ", mask)
+	#print("MASK: ", mask)
 
 	
 	for attribute_data in player_data.PLAYER_BITMASK_LAYOUT:
@@ -381,12 +393,6 @@ func _handle_other_player_disconnected(buffer):
 	var other_player_id = buffer.read_u8()
 	emit_signal("other_player_disconnected", other_player_id)
 
-func _handle_other_player_moved(buffer):
-	print("===OTHER PLAYER MOVED===")
-	var move_x = buffer.read_u16()
-	var move_y = buffer.read_u16()
-	var other_player_id = buffer.read_u8()
-	emit_signal("other_player_moved", move_x, move_y, other_player_id)
 
 func _handle_player_shoot(buffer):
 	print("===PLAYER SHOOT===")
@@ -408,16 +414,18 @@ func _handle_rat_attacked(buffer):
 	
 func _handle_ranking_updated(buffer):
 	var ranking_text_received = buffer.read_string()
-	output_ranking.text = ranking_text_received
+	emit_signal("ranking_updated", ranking_text_received)
+	
 
 
 func _handle_chat_received(buffer):
 	
-	var text_received = buffer.read_string()
+	var text_received = buffer.read_string() + "\n"
 	
 	print("Texto recebido: ", text_received)
 	
-	output_chat.text += (text_received+"\n")
+	#output_chat.text += (text_received+"\n")
+	emit_signal("chat_updated", text_received)
 	
 func _handle_pong(buffer):
 	var timestamp_received = buffer.read_u64()
@@ -428,11 +436,10 @@ func _handle_pong(buffer):
 	#print("HANDLE: ", timestamp_now)
 	
 	
-	ping_screen.text = str(ping)+"ms"
+	var ping_received_text = str(ping)+"ms"
+	emit_signal("ping_updated", ping_received_text)
 	
 	
-func _on_input_text_submitted(new_text: String) -> void:
-	_player_chat()
 
 # --- [ SINAIS RECEBIDOS ] --- #
 
@@ -469,3 +476,4 @@ func _on_player_sonic_pressed():
 
 func _on_ping_timer_timeout() -> void:
 	_ping() # Replace with function body.
+	

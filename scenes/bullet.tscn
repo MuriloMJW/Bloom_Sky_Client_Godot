@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://d3prfcfkfr1e8"]
+[gd_scene load_steps=4 format=3 uid="uid://d3prfcfkfr1e8"]
 
 [ext_resource type="Script" uid="uid://k3y1iw5206r5" path="res://scripts/bullet.gd" id="1_v7oki"]
+[ext_resource type="Texture2D" uid="uid://kkqe4c1arbuo" path="res://sprites/laserLookingUp.png" id="2_y25gk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v7oki"]
 size = Vector2(8, 30)
@@ -8,10 +9,16 @@ size = Vector2(8, 30)
 [node name="Bullet" type="Area2D" groups=["bullet"]]
 script = ExtResource("1_v7oki")
 
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(1, 2)
+scale = Vector2(0.295, 0.295)
+texture = ExtResource("2_y25gk")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_v7oki")
 
 [node name="ColorRect" type="ColorRect" parent="."]
+visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5

@@ -1,0 +1,10 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://dd4nsoet5k123"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dj8aq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ro3t7"]
+bg_color = Color(0.529412, 0, 0.960784, 0.196078)
+
+[resource]
+LineEdit/styles/normal = SubResource("StyleBoxFlat_dj8aq")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_ro3t7")
