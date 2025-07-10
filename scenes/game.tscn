@@ -24,8 +24,17 @@ color = Color(0.0666667, 0, 0.121569, 1)
 
 [node name="UI" parent="CanvasLayer" instance=ExtResource("4_lbhrr")]
 
+[node name="Popup" parent="CanvasLayer/UI" index="0"]
+visible = false
+theme_override_font_sizes/normal_font_size = 65
+text = "PLAYER 1 IS THE BEST!"
+
+[node name="Fps" parent="CanvasLayer/UI/TopMargin/HBoxContainer/FpsContainer" index="0"]
+text = "FPS: 00"
+
 [node name="MobSpawnTimer" type="Timer" parent="."]
 
+[connection signal="timeout" from="CanvasLayer/UI/PopupTimer" to="." method="_on_popup_timer_timeout"]
 [connection signal="text_submitted" from="CanvasLayer/UI/BottomMargin/HBoxContainer/ChatVBoxContainer/ChatInput" to="." method="_on_chat_input_text_submitted"]
 
 [editable path="CanvasLayer/UI"]

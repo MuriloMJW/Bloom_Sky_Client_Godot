@@ -21,6 +21,7 @@ signal connection_status_updated(connection_status_text: String)
 signal ping_updated(ping_text: String)
 signal chat_updated(chat_text: String)
 signal ranking_updated(ranking_text: String)
+signal popup_updated(popup_text: String)
 
 
 var websocket_url = "ws://127.0.0.1:9913"
@@ -83,6 +84,7 @@ enum Network {
 	RAT_ATTACKED = 198,
 	RANKING_UPDATED = 199,
 	CHAT_RECEIVED = 200,
+	POPUP_RECEIVED = 201,
 	
 	PONG = 255
 }
@@ -213,6 +215,9 @@ func receive_packet(packet):
 		Network.CHAT_RECEIVED:
 			_handle_chat_received(buffer)
 			
+		Network.POPUP_RECEIVED:
+			_handle_popup_received(buffer)
+			
 		Network.PONG:
 			_handle_pong(buffer)
 			
@@ -247,7 +252,7 @@ func _request_player_move(move_x, move_y):
 	_send_packet(buffer)
 
 func _request_player_shoot():
-	print("===REQUEST PLAYER SHOOT===")
+	#print("===REQUEST PLAYER SHOOT===")
 	var buffer : MyBuffer
 	buffer = MyBuffer.new()
 	buffer.write_u8(Network.REQUEST_PLAYER_SHOOT)
@@ -264,7 +269,7 @@ func _request_player_damage(player_damaged_id, player_damager_id, damage_value):
 	_send_packet(buffer)
 
 func _request_player_respawn(player_to_respawn_id):
-	print("===REQUEST PLAYER DAMAGE===")
+	print("===REQUEST PLAYER RESPAWN===")
 	var buffer : MyBuffer
 	buffer = MyBuffer.new()
 	buffer.write_u8(Network.REQUEST_PLAYER_RESPAWN)
@@ -356,7 +361,7 @@ func _handle_player_updated(buffer):
 	player_data.id = buffer.read_u8()
 	
 	var mask = buffer.read_u16()
-	#print("MASK: ", mask)
+	#print("MASK: ", String.num_uint64(mask, 2))
 
 	
 	for attribute_data in player_data.PLAYER_BITMASK_LAYOUT:
@@ -395,7 +400,7 @@ func _handle_other_player_disconnected(buffer):
 
 
 func _handle_player_shoot(buffer):
-	print("===PLAYER SHOOT===")
+	#print("===PLAYER SHOOT===")
 	var shooter_id = buffer.read_u8()
 	var speed = buffer.read_u16()
 	var direction = buffer.read_u16()
@@ -426,6 +431,16 @@ func _handle_chat_received(buffer):
 	
 	#output_chat.text += (text_received+"\n")
 	emit_signal("chat_updated", text_received)
+	
+func _handle_popup_received(buffer):
+	
+	var text_received = buffer.read_string() + "\n"
+	
+	print("Texto recebido: ", text_received)
+	
+	#output_chat.text += (text_received+"\n")
+	emit_signal("popup_updated", text_received)	
+
 	
 func _handle_pong(buffer):
 	var timestamp_received = buffer.read_u64()

@@ -4,17 +4,18 @@ class_name PlayerData
 
 
 const PLAYER_BITMASK_LAYOUT = [
-	# attribute,                    bitmask,        data_type
-	{"attribute": "x",              "mask": 1 << 0, "data_type": "float"},
-	{"attribute": "y",              "mask": 1 << 1, "data_type": "float"},
-	{"attribute": "is_alive",       "mask": 1 << 2, "data_type": "u8"},
-	{"attribute": "hp",             "mask": 1 << 3, "data_type": "u8"},
-	{"attribute": "team_id",        "mask": 1 << 4, "data_type": "u8"},
-	{"attribute": "team",           "mask": 1 << 5, "data_type": "string"},
-	{"attribute": "total_kills",    "mask": 1 << 6, "data_type": "u16"},
-	{"attribute": "speed",          "mask": 1 << 7, "data_type": "float"},
-	{"attribute": "shoot_cooldown", "mask": 1 << 8, "data_type": "float"},
-	{"attribute": "username",       "mask": 1 << 9, "data_type": "string"}
+	# attribute,                        bitmask,        data_type
+	{"attribute": "x",                  "mask": 1 << 0, "data_type": "float"},
+	{"attribute": "y",                  "mask": 1 << 1, "data_type": "float"},
+	{"attribute": "is_alive",           "mask": 1 << 2, "data_type": "u8"},
+	{"attribute": "hp",                 "mask": 1 << 3, "data_type": "u8"},
+	{"attribute": "team_id",            "mask": 1 << 4, "data_type": "u8"},
+	{"attribute": "team",               "mask": 1 << 5, "data_type": "string"},
+	{"attribute": "total_kills",        "mask": 1 << 6, "data_type": "u16"},
+	{"attribute": "speed",              "mask": 1 << 7, "data_type": "float"},
+	{"attribute": "shoot_cooldown",     "mask": 1 << 8, "data_type": "float"},
+	{"attribute": "username",           "mask": 1 << 9, "data_type": "string"},
+	{"attribute": "has_sonic_power_up", "mask": 1 << 10, "data_type": "u8"}
 ]
 
 @export var id = null
@@ -29,3 +30,4 @@ const PLAYER_BITMASK_LAYOUT = [
 @export var speed = null
 @export var shoot_cooldown = null
 @export var username = null
+@export var has_sonic_power_up = null

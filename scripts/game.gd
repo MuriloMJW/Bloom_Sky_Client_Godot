@@ -12,12 +12,14 @@ extends Node2D
 @onready var output_ranking = $CanvasLayer/UI/BottomMargin/HBoxContainer/RankingVBoxContainer/RankingContainer/MarginContainer/RankingOutput
 @onready var ranking_screen = $CanvasLayer/UI/BottomMargin/HBoxContainer/RankingVBoxContainer
 @onready var ui = $CanvasLayer/UI
+@onready var popup_screen = $CanvasLayer/UI/Popup
+@onready var popup_timer = $CanvasLayer/UI/PopupTimer
 
 @onready var mob_spawn_timer = $MobSpawnTimer
 
 
 var game_title = "[color='yellow']BLOOM SKY[/color]\n"
-var version = "[color='yellow']Versão 0.0.1 Alfa Pre-release - 09/07/2025 [/color]"
+var version = "[color='yellow']Versão 0.0.1 Alpha - 09/07/2025 [/color]"
 
 
 var my_id = -1
@@ -77,6 +79,7 @@ func _connect_client_signals_to_game():
 	Client.ping_updated.connect(_on_client_ping_updated)
 	Client.chat_updated.connect(_on_client_chat_updated)
 	Client.ranking_updated.connect(_on_client_ranking_updated)
+	Client.popup_updated.connect(_on_client_popup_updated)
 
 func _connect_player_signals_to_client(new_player):
 	# Ligando sinais do player no client
@@ -185,3 +188,13 @@ func _on_client_chat_updated(chat_text: String) -> void:
 
 func _on_client_ranking_updated(ranking_text: String) -> void:
 	output_ranking.text = ranking_text
+
+func _on_client_popup_updated(popup_text: String) -> void:
+	print("MATCH ENCERRADO")
+	popup_screen.show()
+	popup_screen.text = popup_text
+	popup_timer.start()
+
+
+func _on_popup_timer_timeout() -> void:
+	popup_screen.hide()

@@ -22,7 +22,7 @@ func _process(delta: float) -> void:
 	if (dev_mode):
 		if(Client.socket.get_ready_state() == Client.socket.STATE_OPEN and not sent_auth_request):
 			print("TA OPEN")
-			var username = "admin"
+			var username = "Devmj"
 			Client._request_authentication(username)
 			sent_auth_request = true
 
@@ -32,7 +32,8 @@ func _on_play_button_pressed() -> void:
 	#get_tree().call_deferred("change_scene_to_file", game_scene)
 	
 	var username = username_input.text
-	Client._request_authentication(username)
+	if username != "":
+		Client._request_authentication(username)
 
 	
 	

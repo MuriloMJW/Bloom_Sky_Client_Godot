@@ -10,7 +10,7 @@ func _ready() -> void:
 	#if(!is_moving_up):
 	#	speed *= -1
 	#print(is_moving_up)
-	print("BULLET DIRECTION: ", self.rotation_degrees)
+	#print("BULLET DIRECTION: ", self.rotation_degrees)
 	
 	velocity = Vector2.UP.rotated(rotation) * speed
 	

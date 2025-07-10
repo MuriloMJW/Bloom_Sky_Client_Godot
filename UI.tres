@@ -1,9 +1,10 @@
 [gd_resource type="Theme" load_steps=3 format=3 uid="uid://dd4nsoet5k123"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dj8aq"]
+bg_color = Color(0.188235, 0.0392157, 0.309804, 0.862745)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ro3t7"]
-bg_color = Color(0.529412, 0, 0.960784, 0.196078)
+bg_color = Color(0.188235, 0.0392157, 0.309804, 0.862745)
 
 [resource]
 LineEdit/styles/normal = SubResource("StyleBoxFlat_dj8aq")

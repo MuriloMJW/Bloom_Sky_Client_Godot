@@ -21,6 +21,30 @@ size_flags_vertical = 2
 theme = ExtResource("1_ro3t7")
 script = ExtResource("1_dj8aq")
 
+[node name="Popup" type="RichTextLabel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.377
+anchor_right = 0.5
+anchor_bottom = 0.377
+offset_left = -401.0
+offset_top = -175.44
+offset_right = 401.0
+offset_bottom = 175.56
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0.188235, 0.0392157, 0.309804, 1)
+theme_override_constants/outline_size = 40
+theme_override_font_sizes/normal_font_size = 77
+text = "PLAYER 1 WIN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PopupTimer" type="Timer" parent="."]
+wait_time = 10.0
+one_shot = true
+
 [node name="TopMargin" type="MarginContainer" parent="."]
 layout_mode = 1
 offset_right = 1280.0

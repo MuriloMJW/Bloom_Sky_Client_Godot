@@ -45,6 +45,8 @@ var speed: float: set = set_speed
 var shoot_cooldown: float: set = set_shoot_cooldown
 var shoot_damage := 20
 
+var has_sonic_power_up: bool: set = set_has_sonic_power_up
+
 
 # --- Variáveis de Animação
 var is_dying: bool = false
@@ -101,6 +103,14 @@ func set_shoot_cooldown(value):
 	shoot_cooldown = value
 	if(is_node_ready()):
 		shoot_cooldown_timer.wait_time = value
+		
+func set_has_sonic_power_up(value):
+	if(has_sonic_power_up == value):
+		return
+	has_sonic_power_up = value
+	if(is_node_ready()):
+		power_up_sonic()
+	
 
 # ================== INICIO ====================== #
 
@@ -128,8 +138,9 @@ func setup(player_data):
 		self.shoot_cooldown = player_data.shoot_cooldown
 	if player_data.username != null:
 		self.username = player_data.username
-	
-	# self.is_sonicking = false
+	if player_data.has_sonic_power_up != null:
+		self.has_sonic_power_up = player_data.has_sonic_power_up
+
 
 func _ready():
 	collision_shape.disabled = false
@@ -247,7 +258,7 @@ func handle_other_player_moved(delta):
 
 	position = position.lerp(authoritative_position, 0.36)
 	
-	authoritative_cube.show()
+	authoritative_cube.hide()
 	authoritative_cube.position = position
 	
 	var new_animation = "default"
@@ -328,11 +339,22 @@ func respawn():
 
 func kill():
 	is_dying = true
+	print("dando play na death")
 	animation.play("death_anim")
 	
 
-func sonic():
-	animation.play("sonic")
+func power_up_sonic():
+	if self.has_sonic_power_up:
+		if animation.assigned_animation != "death_anim":
+			print("Vo da play no sonic kkkj")
+			animation.play("sonic")
+	else:
+		#animation.play("RESET")
+		# Para ele voltar a rotação certa
+		#await animation.animation_finished
+		#update_team_visual()
+		pass
+		
 	
 func increase_size():
 	scale *= Vector2(1.3, 1.3)
@@ -376,7 +398,6 @@ func update_team_visual():
 		#$username.add_theme_color_override("font_color", Color.AQUA)
 		box.color = Color.from_rgba8(99, 255, 255, 255)
 		team_id = 0
-		print("FUI CHAMADO ROTATION")
 		player_body.set_rotation_degrees(180)
 		player_sprite.sprite_frames = ship_sky_frames
 		player_sprite.flip_v = false
@@ -393,9 +414,14 @@ func update_team_visual():
 		player_sprite.flip_v = true
 		hp_bar.position.y = 57
 		username_label.position.y = 63
+
+func update_power_up_visual():
+	power_up_sonic()
+
 func update_all_visuals():
 	update_hp_visual()
 	update_team_visual()
+	update_power_up_visual()
 	update_is_alive_visual()
 	
 	
